@@ -1,16 +1,12 @@
 package game
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strconv"
 )
 
 // Player main interface for a Player object
 type Player interface {
 	fmt.Stringer
-	play() bool
 	makeMove() int
 	chanMove() chan int
 	chanGo() chan bool
@@ -18,10 +14,12 @@ type Player interface {
 }
 
 type basePlayer struct {
-	chMove chan int
-	chGo   chan bool
-	name   string
-	sym    byte
+	chMove     chan int
+	chGo       chan bool
+	name       string
+	sym        byte
+	difficulty PlayerType
+	game       *Game
 }
 
 func (p *basePlayer) chanMove() chan int {
@@ -33,49 +31,45 @@ func (p *basePlayer) chanGo() chan bool {
 }
 
 func (p *basePlayer) String() string {
-	return p.name
+	return fmt.Sprintf("%s[%c]", p.name, p.sym)
 }
 
-func (p *basePlayer) init(name string, symbol byte) {
+func (p *basePlayer) init(name string, symbol byte, difficulty PlayerType, g *Game) {
 	p.chMove = make(chan int, 1)
 	p.chGo = make(chan bool, 1)
-	p.name = fmt.Sprintf("%s[%c]", name, symbol)
+	p.name = name
 	p.sym = symbol
+	p.difficulty = difficulty
+	p.game = g
 }
 
 func (p *basePlayer) symbol() byte {
 	return p.sym
 }
 
-type humanPlayer struct {
-	basePlayer
-	scanner *bufio.Scanner
-}
-
-func newHumanPlayer(name string, symbol byte) *humanPlayer {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
-	human := &humanPlayer{scanner: scanner}
-	human.basePlayer.init(name, symbol)
-	return human
-}
-
-func (p *humanPlayer) play() bool {
-	for {
-		<-p.chanGo()
-		move := p.makeMove()
+func play(p Player) {
+	for <-p.chanGo() {
+		move := makeMove(p)
 		p.chanMove() <- move
 	}
 }
 
-func (p *humanPlayer) makeMove() int {
-	fmt.Printf("Make move: ")
-	p.scanner.Scan()
-	input := p.scanner.Text()
-	move, err := strconv.Atoi(input)
-	if err != nil {
-		panic(err)
+func makeMove(p Player) int {
+	switch p := p.(type) {
+	case *humanPlayer:
+		return p.makeMove()
+	case *cpuPlayer:
+		return p.makeMove()
+	default:
+		panic(fmt.Sprintf("Unknown Player type %T!\n", p))
 	}
-	fmt.Printf("Made move %v\n", move)
-	return move
+}
+
+func newPlayer(t PlayerType, name string, symbol byte, g *Game) Player {
+	switch t {
+	case Human:
+		return newHumanPlayer(name, symbol, t, g)
+	default:
+		return newCPUPlayer(name, symbol, t, g)
+	}
 }

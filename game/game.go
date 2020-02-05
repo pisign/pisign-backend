@@ -1,6 +1,9 @@
 package game
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+)
 
 // Game main container for a tic tac toe game
 type Game struct {
@@ -10,30 +13,53 @@ type Game struct {
 	board []byte
 }
 
+// PlayerType is the type of the player
+type PlayerType int
+
+// Enum to choose which type of player during game creation
+const (
+	Human PlayerType = iota + 1
+	CPUEasy
+	CPUHard
+)
+
 func newBoard(size []int) []byte {
 	return make([]byte, size[0]*size[1])
 }
 
-// NewHumanVsHumanGame Creates a new game with 2 human players
-func NewHumanVsHumanGame() *Game {
-	p1 := newHumanPlayer("P1", 'X')
-	p2 := newHumanPlayer("P2", 'O')
+// NewGame Creates a new game with 2 human players
+func NewGame(t1, t2 PlayerType) *Game {
+	g := new(Game)
+	p1 := newPlayer(t1, "P1", 'X', g)
+	p2 := newPlayer(t2, "P2", 'O', g)
 	var size = []int{3, 3}
-	return &Game{p1, p2, size, newBoard(size)}
+	g.x = p1
+	g.o = p2
+	g.size = size
+	g.board = newBoard(size)
+	return g
 }
 
 func (g *Game) String() string {
-	var str string
+	s := " "
+	buf := bytes.NewBufferString(s)
+	for i := 0; i < g.size[0]; i++ {
+		buf.WriteByte(byte('A' + i))
+	}
+	buf.WriteString("\n")
 	for i, cell := range g.board {
+		if i%g.size[0] == 0 {
+			buf.WriteByte(byte('1' + (i / g.size[1])))
+		}
 		if cell == 0 {
 			cell = '_'
 		}
-		str += string(cell)
+		buf.WriteByte(cell)
 		if (i+1)%g.size[0] == 0 {
-			str += "\n"
+			buf.WriteString("\n")
 		}
 	}
-	return str
+	return buf.String()
 }
 
 // Update update the game with a new move by player p
@@ -51,20 +77,20 @@ func (g *Game) Update(p Player, move int) bool {
 // Play the game
 func (g *Game) Play(winner chan Player) {
 	activePlayer := g.x
-	go g.x.play()
-	go g.o.play()
+	go play(g.x)
+	go play(g.o)
 	fmt.Println(g)
 	for {
 		valid := false
 		var move int
 		for !valid {
-			fmt.Printf("Sending activation to %s...\n", activePlayer)
+			//fmt.Printf("Sending activation to %s...\n", activePlayer)
 			activePlayer.chanGo() <- true
-			fmt.Printf("Waiting for %s\n", activePlayer)
+			//fmt.Printf("Waiting for %s\n", activePlayer)
 			move = <-activePlayer.chanMove()
 			valid = g.Update(activePlayer, move)
 		}
-		fmt.Printf("%v made move %v\n", activePlayer, move)
+		//fmt.Printf("%v made move %v\n", activePlayer, move)
 		win := g.CheckWinner(activePlayer)
 		if win {
 			winner <- activePlayer

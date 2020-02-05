@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	g := game.NewHumanVsHumanGame()
+	g := game.NewGame(game.Human, game.CPUEasy)
 	winnerChan := make(chan game.Player)
 	go g.Play(winnerChan)
 	var winner game.Player
@@ -17,7 +17,7 @@ func main() {
 		case winner = <-winnerChan:
 			fmt.Printf("Winner is %v!\n", winner)
 		default:
-			fmt.Println("Still waiting for winner...")
+			//fmt.Println("Still waiting for winner...")
 			time.Sleep(1 * time.Second)
 		}
 	}
