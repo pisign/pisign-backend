@@ -1,7 +1,8 @@
 # pisign-backend
-
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Build Status](https://travis-ci.org/pisign/pisign-backend.svg?branch=master)](https://travis-ci.org/pisign/pisign-backend)
 [![codecov](https://codecov.io/gh/pisign/pisign-backend/branch/master/graph/badge.svg)](https://codecov.io/gh/pisign/pisign-backend)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 ### Development
 
 Copy the script `post-commit` into your git hooks folder, 

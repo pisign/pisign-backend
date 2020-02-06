@@ -1,14 +1,10 @@
 language: go
+
 go:
-- master
+  - master
+
 scripts:
-- go test ./... -race -coverprofile=coverage.txt -covermode=atomic
-
-env:
-  global:
-  - secure: X07cBVCc9PYt94DZVYu7yTX+Sw4LTsRNMlAKDjeejGqvrIXJMrCuGd/XkInVLz8x0zpflec3Z373e01t1V11KqIsL4dT+0DP0VTp1Stxt7QedtuSvOupd7N/w2vpUQsskP/pqUhwfYrxyHUVaQ53MVEGHban6l1jz40K3vh3irQDxfthJscmI+ASd5g8A6mRYazgNaKI4/whtWUpR59UdvnprJBw2/AgdYaPYvXqafOmU412VvdaG4v9IRdomd0xmxV3viiqpDtkCBTqunmNSJgdybP5wsCWxzQh0dwxYniaztSl3A8uPheoYjpzofUGDHoJNOStOzPoyfIwdFvXfswP5H59UreLGBm1R3XAq2+3xPi1/CVWqtkGCptgB3LT28DMPMhwnDy5tnbMfyoYLohtTeKZ7glVOMZ5eguXSgMNwm8vDh0C/zf+eeRDFBh+yf/DGmmJtBv37jy/3h0TuMIz/Gn0txuE3R9NGJZSXoKTK0cR766gILGhjFLA2Qka4sut6foPZUyyAbfQVFxkJ6Us5L9pO/Nj6VRJewb+TGwONs2mRDv4TEoTt77seKxNkBg2J9WeTeXalCt+t535a07XnoP7/Kq6OXAF0hQ+mqdz5ePJF6TMXMzgZYrrTwDPID289+zN+bRIPLAQse62zpfFO95Teuspyclj2s/PTrM=
-
-  script:
+  - go test ./... -race -coverprofile=coverage.txt -covermode=atomic
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
