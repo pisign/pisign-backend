@@ -1,0 +1,19 @@
+#!/bin/bash
+
+echo "PRE COMMIT"
+echo "Checking spec file..."
+
+cd $GOPATH/src/github.com/pisign/pisign-backend/cmd/specgen
+
+go run main.go > /tmp/specfile
+
+if ! cmp /tmp/specfile ../../spec/specfile >/dev/null 2>&1
+then
+  echo "Files are different"
+  mv /tmp/specfile ../../spec/specfile
+  echo "Committing the new specfile"
+  git add ../../spec/*
+  PREV_COMMIT_MSG=`git log -1 --pretty=%B`
+  NEW_COMMIT_MSG="${PREV_COMMIT_MSG} (original commit) + [AUTO SPEC] Spec update"
+  git commit --amend -m "$NEW_COMMIT_MSG"
+fi
