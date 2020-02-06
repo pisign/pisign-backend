@@ -3,6 +3,8 @@ package weather
 import (
 	"reflect"
 	"testing"
+
+	"github.com/pisign/pisign-backend/utils"
 )
 
 func Test_buildurl(t *testing.T) {
@@ -67,7 +69,9 @@ func Test_parseJSON(t *testing.T) {
 		COD:      200,
 	}
 
-	parsedJSON := parseJSON(JSONdata)
+	var parsedJSON OpenWeatherResponse
+	utils.ParseJSON(JSONdata, &parsedJSON)
+
 	if !reflect.DeepEqual(exampledata, parsedJSON) {
 		t.Error("Error in parsed json! Does not match excpected struct")
 		t.Error(parsedJSON)
