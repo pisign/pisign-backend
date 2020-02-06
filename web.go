@@ -5,21 +5,38 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/pisign/backend/sockets"
 )
 
-var addr = flag.String("addr", ":1718", "http service address")
-
-func web() {
-	fmt.Println("Starting up server...")
-	flag.Parse()
-	http.Handle("/", http.HandlerFunc(root))
-	err := http.ListenAndServe(*addr, nil)
+func serveWs(pool *sockets.Pool, w http.ResponseWriter, r *http.Request) {
+	log.Println("Websocket endpoing hit!")
+	conn, err := sockets.Upgrade(w, r)
 	if err != nil {
-		log.Fatal("ListenAndServer:", err)
+		fmt.Fprintf(w, "%+v\n", err)
 	}
 
+	client := &sockets.Client{
+		Conn: conn,
+		Pool: pool,
+	}
+
+	pool.Register <- client
+	client.Read()
 }
 
-func root(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("Responding...")
+func setupRoutes() {
+	pool := sockets.NewPool()
+	go pool.Start()
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(pool, w, r)
+	})
+}
+
+var addr = flag.String("addr", "localhost:9000", "http service address")
+
+func main() {
+	fmt.Printf("Running server at %v\n", *addr)
+	setupRoutes()
+	http.ListenAndServe(*addr, nil)
 }
