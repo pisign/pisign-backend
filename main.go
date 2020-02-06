@@ -7,5 +7,8 @@ import (
 )
 
 func main() {
-	fmt.Print(string(weather.API()))
+	datachan := make(chan string)
+	go weather.API(datachan)
+	output := <-datachan
+	fmt.Println(output)
 }
