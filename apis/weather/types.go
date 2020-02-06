@@ -32,6 +32,10 @@ type clouds struct {
 	All float64
 }
 
+type rain struct {
+	OneHR float64 `json:"1h"`
+}
+
 type sys struct {
 	Type    float64
 	ID      float64
@@ -48,6 +52,7 @@ type OpenWeatherResponse struct {
 	Main       main
 	Visibility float64
 	Wind       wind
+	Rain       rain
 	Clouds     clouds
 	DT         float64
 	Sys        sys
