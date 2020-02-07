@@ -29,11 +29,15 @@ window.addEventListener("load", function(evt) {
         widgets.push(widget)
         print("Creating widget " + widgetId)
 
-
+        ws.onmessage = function(evt) {
+            print("RESPONSE: " + evt.data);
+            var data = JSON.parse(evt.data)
+            widget.innerHTML = "ID from server: " + data.id + ", api: " + data.api
+        }
         ws.send("Creating widget " + widgetId)
     }
     document.getElementById("create").onclick = function(evt) {
-        var ws = new WebSocket("ws://localhost:9000/ws");
+        var ws = new WebSocket("ws://localhost:9000/ws?api=weather");
         ws.onopen = function(evt) {
             print("OPEN")
             addWidget(ws)
@@ -41,9 +45,6 @@ window.addEventListener("load", function(evt) {
         ws.onclose = function(evt) {
             print("CLOSE");
             ws = null
-        }
-        ws.onmessage = function(evt) {
-            print("RESPONSE: " + evt.data);
         }
         ws.onerror = function(evt) {
             print("ERROR: " + evt.data);

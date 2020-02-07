@@ -9,9 +9,10 @@ import (
 
 // Client client
 type Client struct {
-	APIName string
-	Conn    *websocket.Conn
-	Pool    *Pool
+	ID      int             `json:"id"`
+	APIName string          `json:"api"`
+	Conn    *websocket.Conn `json:"-"`
+	Pool    *Pool           `json:"-"`
 }
 
 // Message holds a messsage
@@ -34,7 +35,10 @@ func (c *Client) Read() {
 		}
 
 		message := Message{Type: messageType, Body: string(p)}
-		c.Pool.Broadcast <- message
-		fmt.Printf("Message Received: %+v\n", message)
+		fmt.Printf("Message Received from %s: %+v\n", c, message)
 	}
+}
+
+func (c *Client) String() string {
+	return fmt.Sprintf("Client{ID=%v, API:%s}", c.ID, c.APIName)
 }
