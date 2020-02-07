@@ -1,5 +1,5 @@
-// Package sockets Code from https://tutorialedge.net/projects/chat-system-in-go-and-react/part-4-handling-multiple-clients/
-package sockets
+// Package socket Code from https://tutorialedge.net/projects/chat-system-in-go-and-react/part-4-handling-multiple-clients/
+package socket
 
 import (
 	"log"

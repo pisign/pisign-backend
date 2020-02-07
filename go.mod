@@ -1,4 +1,4 @@
-module github.com/pisign/backend
+module github.com/pisign/pisign-backend
 
 go 1.13
 

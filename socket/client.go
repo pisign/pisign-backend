@@ -1,4 +1,4 @@
-package sockets
+package socket
 
 import (
 	"fmt"
@@ -9,9 +9,9 @@ import (
 
 // Client client
 type Client struct {
-	ID   string
-	Conn *websocket.Conn
-	Pool *Pool
+	APIName string
+	Conn    *websocket.Conn
+	Pool    *Pool
 }
 
 // Message holds a messsage
