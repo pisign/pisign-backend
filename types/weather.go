@@ -76,8 +76,8 @@ type WeatherResponse struct {
 }
 
 // Serialize serializes the WeatherResponse
-func (w *WeatherResponse) Serialize() []byte {
-	bytes, err := json.Marshal(w)
+func (res *WeatherResponse) Serialize() []byte {
+	bytes, err := json.Marshal(res)
 	if err != nil {
 		fmt.Println(err.Error())
 		return []byte{}

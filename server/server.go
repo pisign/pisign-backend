@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/pisign/pisign-backend/api"
-
 	"github.com/pisign/pisign-backend/socket"
 )
 
@@ -18,21 +16,8 @@ func serveWs(pool *socket.Pool, w http.ResponseWriter, r *http.Request) {
 	}
 
 	apiName := r.FormValue("api")
-	if !api.Valid(apiName) {
-		log.Printf("Invalid APIName in incoming websocket connection: %v\n", apiName)
-		conn.Close()
-		return
-	}
 
-	client := &socket.Client{
-		ID:      len(pool.Clients),
-		APIName: apiName,
-		Conn:    conn,
-		Pool:    pool,
-	}
-
-	pool.Register <- client
-	client.Read()
+	socket.CreateClient(apiName, conn, pool)
 }
 
 func setupRoutes() {

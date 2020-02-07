@@ -8,7 +8,8 @@
         margin-top: 10px;
     }
 </style>
-<script>  
+<script> 
+
 window.addEventListener("load", function(evt) {
     var output = document.getElementById("output");
     var widgetsDiv = document.getElementById("widgets");
@@ -20,35 +21,41 @@ window.addEventListener("load", function(evt) {
 
     var widgets = []
 
-    function addWidget(ws) {
-        var widgetId = widgets.length
+    function newWidget() {
+        var widgetId = widgets.length;
         var widget = document.createElement("div")
         widget.classList.add("widget")
-        widget.innerHTML = "WIDGET " + widgetId
         widgetsDiv.appendChild(widget)
         widgets.push(widget)
         print("Creating widget " + widgetId)
 
-        ws.onmessage = function(evt) {
-            print("RESPONSE: " + evt.data);
-            var data = JSON.parse(evt.data)
-            widget.innerHTML = "ID from server: " + data.id + ", api: " + data.api
-        }
-        ws.send("Creating widget " + widgetId)
+        return widget
     }
-    document.getElementById("create").onclick = function(evt) {
-        var ws = new WebSocket("ws://localhost:9000/ws?api=weather");
+
+    function addWidget(ws) {
+        var widget = newWidget()
+
         ws.onopen = function(evt) {
             print("OPEN")
-            addWidget(ws)
         }
         ws.onclose = function(evt) {
             print("CLOSE");
+            widgetsDiv.removeChild(widget)
             ws = null
         }
         ws.onerror = function(evt) {
             print("ERROR: " + evt.data);
         }
+
+        ws.onmessage = function(evt) {
+            print("RESPONSE: " + evt.data);
+            var data = JSON.parse(evt.data);
+            widget.innerHTML = "From server: " + JSON.stringify(data);
+        }
+    }
+    document.getElementById("create").onclick = function(evt) {
+        var ws = new WebSocket("ws://localhost:9000/ws?api="+apiInput.value);
+        addWidget(ws)
         return false;
     };
 });
@@ -60,6 +67,7 @@ window.addEventListener("load", function(evt) {
 <p>Click "Create" to create a new connection to the server, 
 <p>
 <form>
+<p><input id="apiInput" type="text" value="weather">
 <button id="create">Create Widget</button>
 </form>
 </td><td valign="top" width="50%">

@@ -1,18 +1,41 @@
 package socket
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
+	"github.com/pisign/pisign-backend/api"
 )
 
 // Client client
 type Client struct {
-	ID      int             `json:"id"`
-	APIName string          `json:"api"`
-	Conn    *websocket.Conn `json:"-"`
-	Pool    *Pool           `json:"-"`
+	ID   int             `json:"id"`
+	API  api.API         `json:"api"`
+	Conn *websocket.Conn `json:"-"`
+	Pool *Pool           `json:"-"`
+}
+
+// CreateClient creates a new client, with a valid api attached
+func CreateClient(apiName string, conn *websocket.Conn, pool *Pool) error {
+	a, err := api.Connect(apiName)
+	if err != nil {
+		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+		conn.Close()
+		return err
+	}
+
+	client := &Client{
+		ID:   len(pool.Clients),
+		API:  a,
+		Conn: conn,
+		Pool: pool,
+	}
+
+	pool.Register <- client
+	client.Read()
+	return nil
 }
 
 // Message holds a messsage
@@ -40,5 +63,6 @@ func (c *Client) Read() {
 }
 
 func (c *Client) String() string {
-	return fmt.Sprintf("Client{ID=%v, API:%s}", c.ID, c.APIName)
+	str, _ := json.Marshal(c)
+	return string(str)
 }

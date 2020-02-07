@@ -16,3 +16,9 @@ type ExternalAPI interface {
 	// send to the frontend
 	Transform(interface{}) InternalAPI
 }
+
+// API is the entrance point of all apis to connect to a client
+type API interface {
+	Configure(json string)
+	Name() string
+}
