@@ -2,8 +2,10 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 )
 
 /*
@@ -34,4 +36,27 @@ func ParseResponse(resp *http.Response) []byte {
 // ParseJSON parses byte slice body into struct i
 func ParseJSON(body []byte, i interface{}) {
 	json.Unmarshal(body, i)
+}
+
+// StructPrint prints out the structure of a Struct
+func StructPrint(v interface{}) {
+
+	t := reflect.Indirect(reflect.ValueOf(v)).Type()
+
+	fieldFmt := ""
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+
+		// If Name() returns empty string, means we have something like a slice
+		name := field.Type.Name()
+		if name == "" {
+			name = field.Type.String()
+		}
+
+		line := fmt.Sprintf("%-13v", field.Name) + name
+		fieldFmt += "    " + line + "\n"
+	}
+
+	fmt.Println("type " + t.Name() + " {\n" + fieldFmt + "}\n")
 }
