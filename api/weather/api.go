@@ -7,9 +7,9 @@ import (
 	"github.com/pisign/pisign-backend/api"
 )
 
-// API is the function that gets called to get the data from the weather API
+// APIFunc is the function that gets called to get the data from the weather API
 // This should be the only function that gets called from an external service
-func API(data chan string) {
+func APIFunc(data chan string) {
 	var openWeatherResponse OpenWeatherResponse
 	zipcode := 98105
 	apikey := os.Getenv("WEATHER_KEY")
@@ -25,4 +25,23 @@ func API(data chan string) {
 	var internalWeatherResponse api.InternalAPI
 	internalWeatherResponse = openWeatherResponse.Transform()
 	data <- string(internalWeatherResponse.Serialize())
+}
+
+// API yay
+type API struct {
+	api.BaseAPI
+	zip    string
+	apiKey string
+}
+
+// NewAPI creates a new weather api for a client
+func NewAPI() *API {
+	a := new(API)
+	a.APIName = "weather"
+	return a
+}
+
+// Configure for weather
+func (a *API) Configure(json string) {
+	fmt.Println("Configuring WEATHER!")
 }

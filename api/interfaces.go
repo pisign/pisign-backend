@@ -22,3 +22,13 @@ type API interface {
 	Configure(json string)
 	Name() string
 }
+
+// BaseAPI base for all APIs
+type BaseAPI struct {
+	APIName string `json:"apiName"`
+}
+
+// Name gets name of the api
+func (a *BaseAPI) Name() string {
+	return a.APIName
+}

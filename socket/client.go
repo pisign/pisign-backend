@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/api"
+	"github.com/pisign/pisign-backend/api/manager"
 )
 
 // Client client
@@ -19,7 +20,7 @@ type Client struct {
 
 // CreateClient creates a new client, with a valid api attached
 func CreateClient(apiName string, conn *websocket.Conn, pool *Pool) error {
-	a, err := api.Connect(apiName)
+	a, err := manager.Connect(apiName)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()
