@@ -6,9 +6,10 @@ import (
 	"net/http"
 
 	"github.com/pisign/pisign-backend/socket"
+	"github.com/pisign/pisign-backend/widget"
 )
 
-func serveWs(pool *socket.Pool, w http.ResponseWriter, r *http.Request) {
+func serveWs(pool *widget.Pool, w http.ResponseWriter, r *http.Request) {
 	log.Println("Websocket endpoing hit!")
 	conn, err := socket.Upgrade(w, r)
 	if err != nil {
@@ -17,11 +18,11 @@ func serveWs(pool *socket.Pool, w http.ResponseWriter, r *http.Request) {
 
 	apiName := r.FormValue("api")
 
-	socket.CreateClient(apiName, conn, pool)
+	widget.Create(apiName, conn, pool)
 }
 
 func setupRoutes() {
-	pool := socket.NewPool()
+	pool := widget.NewPool()
 	go pool.Start()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(pool, w, r)

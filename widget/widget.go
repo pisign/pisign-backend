@@ -1,4 +1,4 @@
-package socket
+package widget
 
 import (
 	"encoding/json"
@@ -10,16 +10,16 @@ import (
 	"github.com/pisign/pisign-backend/api/manager"
 )
 
-// Client client
-type Client struct {
+// Widget struct for a single frontend widget
+type Widget struct {
 	ID   int             `json:"id"`
 	API  api.API         `json:"api"`
 	Conn *websocket.Conn `json:"-"`
 	Pool *Pool           `json:"-"`
 }
 
-// CreateClient creates a new client, with a valid api attached
-func CreateClient(apiName string, conn *websocket.Conn, pool *Pool) error {
+// Create creates a new widget, with a valid api attached
+func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
 	a, err := manager.Connect(apiName)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
@@ -27,15 +27,17 @@ func CreateClient(apiName string, conn *websocket.Conn, pool *Pool) error {
 		return err
 	}
 
-	client := &Client{
-		ID:   len(pool.Clients),
+	widget := &Widget{
+		ID:   len(pool.Widgets),
 		API:  a,
 		Conn: conn,
 		Pool: pool,
 	}
 
-	pool.Register <- client
-	client.Read()
+	pool.Register <- widget
+	go widget.Read()
+	go widget.API.Run(conn)
+	widget.Conn.WriteJSON(widget)
 	return nil
 }
 
@@ -45,25 +47,25 @@ type Message struct {
 	Body string `json:"body"`
 }
 
-func (c *Client) Read() {
+func (w *Widget) Read() {
 	defer func() {
-		c.Pool.Unregister <- c
-		c.Conn.Close()
+		w.Pool.Unregister <- w
+		w.Conn.Close()
 	}()
 
 	for {
-		messageType, p, err := c.Conn.ReadMessage()
+		messageType, p, err := w.Conn.ReadMessage()
 		if err != nil {
-			log.Println("Read->c.Conn.ReadMessage", err)
+			log.Println("Read->w.Conn.ReadMessage", err)
 			return
 		}
 
 		message := Message{Type: messageType, Body: string(p)}
-		fmt.Printf("Message Received from %s: %+v\n", c, message)
+		fmt.Printf("Message Received from %s: %+v\n", w, message)
 	}
 }
 
-func (c *Client) String() string {
-	str, _ := json.Marshal(c)
+func (w *Widget) String() string {
+	str, _ := json.Marshal(w)
 	return string(str)
 }

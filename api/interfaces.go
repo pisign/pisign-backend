@@ -1,5 +1,7 @@
 package api
 
+import "github.com/gorilla/websocket"
+
 // InternalAPI is the interface our internal API uses
 type InternalAPI interface {
 	// Serialize transforms the data structure into a byte slice to be sent
@@ -21,6 +23,7 @@ type ExternalAPI interface {
 type API interface {
 	Configure(json string)
 	Name() string
+	Run(*websocket.Conn)
 }
 
 // BaseAPI base for all APIs

@@ -2,7 +2,9 @@ package clock
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/api"
 )
 
@@ -21,4 +23,14 @@ func NewAPI() *API {
 // Configure for clock
 func (a *API) Configure(json string) {
 	fmt.Println("Configuring CLOCK!")
+}
+
+// Run main entry point to clock API
+func (a *API) Run(conn *websocket.Conn) {
+	fmt.Println("Running CLOCK")
+	for {
+		t := time.Now()
+		conn.WriteJSON(t)
+		time.Sleep(1 * time.Second)
+	}
 }
