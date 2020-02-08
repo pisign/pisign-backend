@@ -12,10 +12,11 @@ import (
 
 // Widget struct for a single frontend widget
 type Widget struct {
-	ID   int             `json:"id"`
-	API  api.API         `json:"api"`
-	Conn *websocket.Conn `json:"-"`
-	Pool *Pool           `json:"-"`
+	ID        int             `json:"id"`
+	API       api.API         `json:"api"`
+	Conn      *websocket.Conn `json:"-"`
+	Pool      *Pool           `json:"-"`
+	CloseChan chan bool       `json:"-"`
 }
 
 // Create creates a new widget, with a valid api attached
@@ -28,15 +29,16 @@ func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
 	}
 
 	widget := &Widget{
-		ID:   len(pool.Widgets),
-		API:  a,
-		Conn: conn,
-		Pool: pool,
+		ID:        len(pool.Widgets),
+		API:       a,
+		Conn:      conn,
+		Pool:      pool,
+		CloseChan: make(chan bool),
 	}
 
 	pool.Register <- widget
 	go widget.Read()
-	go widget.API.Run(conn)
+	go widget.API.Run(widget)
 	widget.Conn.WriteJSON(widget)
 	return nil
 }
@@ -50,6 +52,7 @@ type Message struct {
 func (w *Widget) Read() {
 	defer func() {
 		w.Pool.Unregister <- w
+		w.CloseChan <- true
 		w.Conn.Close()
 	}()
 
@@ -63,6 +66,16 @@ func (w *Widget) Read() {
 		message := Message{Type: messageType, Body: string(p)}
 		fmt.Printf("Message Received from %s: %+v\n", w, message)
 	}
+}
+
+// Send out to client through websocket
+func (w *Widget) Send() {
+	fmt.Printf("Sending data to: %v\n", w)
+}
+
+// Close returns a channel that signifies the closing of the widget
+func (w *Widget) Close() chan bool {
+	return w.CloseChan
 }
 
 func (w *Widget) String() string {

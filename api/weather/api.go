@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/api"
 )
 
@@ -48,6 +47,6 @@ func (a *API) Configure(json string) {
 }
 
 // Run main entry point to weather API
-func (a *API) Run(conn *websocket.Conn) {
+func (a *API) Run(w api.Widget) {
 	fmt.Println("Running WEATHER")
 }

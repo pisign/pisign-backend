@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/api"
 )
 
@@ -26,11 +25,14 @@ func (a *API) Configure(json string) {
 }
 
 // Run main entry point to clock API
-func (a *API) Run(conn *websocket.Conn) {
+func (a *API) Run(w api.Widget) {
 	fmt.Println("Running CLOCK")
+	ticker := time.NewTicker(1 * time.Second)
+	defer func() {
+		ticker.Stop()
+		fmt.Println("STOPPING CLOCK")
+	}()
 	for {
-		t := time.Now()
-		conn.WriteJSON(t)
-		time.Sleep(1 * time.Second)
+		w.Send()
 	}
 }
