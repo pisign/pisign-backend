@@ -1,3 +1,4 @@
+	// Test normal execution
 package utils
 
 import (
