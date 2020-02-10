@@ -17,9 +17,10 @@ type Args struct {
 
 // Get hits the openweathermap.org API to get weather data
 func (o *OpenWeatherResponse) Get(a interface{}) {
-	args, ok := a.(Args)
-	apikey := args.Apikey
-	zipcode := args.Zipcode
+	args, ok := a.(API)
+	fmt.Println("Getting weather with args: ", args)
+	apikey := args.APIKey
+	zipcode := args.Zip
 
 	if !ok {
 		// TODO better error handling
