@@ -2,7 +2,6 @@ package widget
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -12,8 +11,8 @@ import (
 
 // Widget struct for a single frontend widget
 type Widget struct {
-	ID        int             `json:"id"`
-	API       api.API         `json:"api"`
+	ID        int
+	API       api.API
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
 	CloseChan chan bool       `json:"-"`
@@ -44,8 +43,8 @@ func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
 
 // Message holds a messsage
 type Message struct {
-	Type int    `json:"type"`
-	Body string `json:"body"`
+	Type int
+	Body string
 }
 
 func (w *Widget) Read() {
@@ -63,7 +62,7 @@ func (w *Widget) Read() {
 		}
 
 		message := Message{Type: messageType, Body: string(p)}
-		fmt.Printf("Message Received from %s: %+v\n", w, message)
+		log.Printf("Message Received from %s: %+v\n", w, message)
 		w.API.Configure(p)
 	}
 }
