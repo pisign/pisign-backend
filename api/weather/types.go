@@ -46,7 +46,7 @@ type sys struct {
 
 // OpenWeatherResponse is the struct that encodes the API data from openweathermap.org
 type OpenWeatherResponse struct {
-	Coord      coord `json:"cord"`
+	Coord      coord
 	Weather    []weather
 	Base       string
 	Main       main
