@@ -71,6 +71,7 @@ func (w *Widget) Read() {
 		message := Message{Type: messageType, Body: string(p)}
 		fmt.Printf("Message Received from %s: %+v\n", w, message)
 		w.API.Configure(p)
+		w.Pool.save()
 	}
 }
 

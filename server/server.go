@@ -34,8 +34,6 @@ func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		fmt.Printf("Retrieving layout data for %s...\n", layoutName)
 		fmt.Fprintf(w, "%+v", widget.LoadLayout(layoutName))
-	case http.MethodPost:
-		fmt.Fprintf(w, "Updating layout data for %s...\n", layoutName)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
