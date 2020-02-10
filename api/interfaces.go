@@ -29,7 +29,6 @@ type API interface {
 // Widget interface
 type Widget interface {
 	json.Unmarshaler
-	json.Marshaler
 	Read()
 	Send(interface{})
 	Close() chan bool

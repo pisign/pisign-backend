@@ -91,35 +91,36 @@ func (w *Widget) String() string {
 
 // UnmarshalJSON for widget
 func (w *Widget) UnmarshalJSON(b []byte) error {
-	var data struct {
-		ID      int
+	//TODO: find better way to Unmarshal widget
+	var name struct {
 		APIName string
-		API     interface{}
 	}
 
-	err := json.Unmarshal(b, &data)
+	err := json.Unmarshal(b, &name)
 	if err != nil {
 		log.Println("Could not unmarshal widget error 1: ", err)
 		return err
 	}
-	fmt.Printf("JSON DATA: %v\n", data)
-	return nil
-	switch data.APIName {
+	var t thing
+	fmt.Printf("JSON DATA: %v\n", t)
+	switch name.APIName {
 	case "weather":
-		w.API = data.API.(*weather.API)
+		t.API = new(weather.API)
 	case "clock":
-		w.API = data.API.(*clock.API)
+		t.API = new(clock.API)
 	default:
-		msg := fmt.Sprintf("Unknown api type: %s", data.APIName)
+		msg := fmt.Sprintf("Unknown api type: %s", name.APIName)
 		return errors.New(msg)
 	}
-	w.APIName = data.APIName
-	w.ID = data.ID
+	err = json.Unmarshal(b, &t)
+	w.API = t.API
+	w.APIName = t.APIName
+	w.ID = t.ID
 	return nil
 }
 
 type thing struct {
-	ID      int
-	APIName string
-	API     interface{}
+	ID      int     `json:"id"`
+	API     api.API `json:"api"`
+	APIName string  `json:"apiName"`
 }
