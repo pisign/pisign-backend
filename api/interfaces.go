@@ -1,5 +1,7 @@
 package api
 
+import "encoding/json"
+
 // InternalAPI is the interface our internal API uses
 type InternalAPI interface {
 	// Serialize transforms the data structure into a byte slice to be sent
@@ -26,6 +28,8 @@ type API interface {
 
 // Widget interface
 type Widget interface {
+	json.Unmarshaler
+	json.Marshaler
 	Read()
 	Send(interface{})
 	Close() chan bool

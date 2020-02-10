@@ -21,12 +21,33 @@ func serveWs(pool *widget.Pool, w http.ResponseWriter, r *http.Request) {
 	widget.Create(apiName, conn, pool)
 }
 
+func serveLayouts(w http.ResponseWriter, r *http.Request) {
+	log.Println("Layouts endpoing hit!")
+	layoutName := r.FormValue("name")
+	if layoutName == "" {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		fmt.Fprintln(w, "Must supply `name` parameter")
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		fmt.Printf("Retrieving layout data for %s...\n", layoutName)
+		fmt.Fprintf(w, "%+v", widget.LoadLayout(layoutName))
+	case http.MethodPost:
+		fmt.Fprintf(w, "Updating layout data for %s...\n", layoutName)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 func setupRoutes() {
 	pool := widget.NewPool()
 	go pool.Start()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(pool, w, r)
 	})
+	http.HandleFunc("/layouts", serveLayouts)
 }
 
 // StartLocalServer creates a new server on localhost

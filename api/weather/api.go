@@ -59,6 +59,12 @@ func NewAPI() *API {
 	return a
 }
 
+// UnmarshalJSON for weather
+func (a *API) UnmarshalJSON(b []byte) error {
+	a.APIName = "WEATHER"
+	return nil
+}
+
 // Configure for weather
 func (a *API) Configure(j []byte) {
 	fmt.Println("Configuring WEATHER!")
@@ -72,7 +78,7 @@ func (a *API) Configure(j []byte) {
 // Run main entry point to weather API
 func (a *API) Run(w api.Widget) {
 	fmt.Println("Running WEATHER")
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	defer func() {
 		ticker.Stop()
 		fmt.Println("STOPPING WEATHER")

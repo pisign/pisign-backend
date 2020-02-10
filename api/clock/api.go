@@ -24,6 +24,12 @@ func NewAPI() *API {
 	return a
 }
 
+// UnmarshalJSON for clock
+func (a *API) UnmarshalJSON(b []byte) error {
+	a.APIName = "CLOCK"
+	return nil
+}
+
 type configurationArgs struct {
 	Location string `json:"location"`
 }

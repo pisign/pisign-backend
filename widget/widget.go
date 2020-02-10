@@ -2,8 +2,12 @@ package widget
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
+
+	"github.com/pisign/pisign-backend/api/clock"
+	"github.com/pisign/pisign-backend/api/weather"
 
 	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/api"
@@ -14,6 +18,7 @@ import (
 type Widget struct {
 	ID        int             `json:"id"`
 	API       api.API         `json:"api"`
+	APIName   string          `json:"apiName"`
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
 	CloseChan chan bool       `json:"-"`
@@ -31,6 +36,7 @@ func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
 	widget := &Widget{
 		ID:        len(pool.Widgets),
 		API:       a,
+		APIName:   apiName,
 		Conn:      conn,
 		Pool:      pool,
 		CloseChan: make(chan bool),
@@ -81,4 +87,39 @@ func (w *Widget) Close() chan bool {
 func (w *Widget) String() string {
 	str, _ := json.Marshal(w)
 	return string(str)
+}
+
+// UnmarshalJSON for widget
+func (w *Widget) UnmarshalJSON(b []byte) error {
+	var data struct {
+		ID      int
+		APIName string
+		API     interface{}
+	}
+
+	err := json.Unmarshal(b, &data)
+	if err != nil {
+		log.Println("Could not unmarshal widget error 1: ", err)
+		return err
+	}
+	fmt.Printf("JSON DATA: %v\n", data)
+	return nil
+	switch data.APIName {
+	case "weather":
+		w.API = data.API.(*weather.API)
+	case "clock":
+		w.API = data.API.(*clock.API)
+	default:
+		msg := fmt.Sprintf("Unknown api type: %s", data.APIName)
+		return errors.New(msg)
+	}
+	w.APIName = data.APIName
+	w.ID = data.ID
+	return nil
+}
+
+type thing struct {
+	ID      int
+	APIName string
+	API     interface{}
 }
