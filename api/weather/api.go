@@ -16,11 +16,11 @@ import (
 func (a *API) Data() string {
 	var openWeatherResponse OpenWeatherResponse
 	if a.APIKey == "" {
-		fmt.Println("no key found")
+		log.Println("no key found")
 		return ""
 	}
 
-	fmt.Println("Getting weather with args: ", a)
+	log.Println("Getting weather with args: ", a)
 	apikey := a.APIKey
 	zipcode := a.Zip
 
@@ -36,10 +36,10 @@ func (a *API) Data() string {
 
 	body := utils.ParseResponse(resp)
 
-	fmt.Println("Weather Response: ", string(body))
+	log.Println("Weather Response: ", string(body))
 
 	utils.ParseJSON(body, openWeatherResponse)
-	fmt.Printf("Weather returned: %+v", openWeatherResponse)
+	log.Printf("Weather returned: %+v", openWeatherResponse)
 	var internalWeatherResponse api.InternalAPI
 	internalWeatherResponse = openWeatherResponse.Transform()
 	return string(internalWeatherResponse.Serialize())
@@ -48,8 +48,8 @@ func (a *API) Data() string {
 // API yay
 type API struct {
 	api.BaseAPI
-	Zip    int    `json:"zip"`
-	APIKey string `json:"apiKey"`
+	Zip    int
+	APIKey string
 }
 
 // NewAPI creates a new weather api for a client
@@ -67,7 +67,7 @@ func (a *API) UnmarshalJSON(b []byte) error {
 
 // Configure for weather
 func (a *API) Configure(j []byte) {
-	fmt.Println("Configuring WEATHER!")
+	log.Println("Configuring WEATHER!")
 	err := json.Unmarshal(j, &a)
 	if err != nil {
 		log.Println("Error configuring weather api:", err)
@@ -77,11 +77,11 @@ func (a *API) Configure(j []byte) {
 
 // Run main entry point to weather API
 func (a *API) Run(w api.Widget) {
-	fmt.Println("Running WEATHER")
-	ticker := time.NewTicker(60 * time.Second)
+	log.Println("Running WEATHER")
+	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
 		ticker.Stop()
-		fmt.Println("STOPPING WEATHER")
+		log.Println("STOPPING WEATHER")
 	}()
 	for {
 		select {

@@ -2,7 +2,6 @@ package clock
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 
@@ -11,9 +10,9 @@ import (
 
 // API yay
 type API struct {
-	api.BaseAPI `json:"-"`
-	Location    *time.Location `json:"location"`
-	Format      string         `json:"format"`
+	api.BaseAPI
+	Location *time.Location
+	Format   string
 }
 
 // NewAPI creates a new clock api for a client
@@ -31,12 +30,12 @@ func (a *API) UnmarshalJSON(b []byte) error {
 }
 
 type configurationArgs struct {
-	Location string `json:"location"`
+	Location string
 }
 
 // Configure for clock
 func (a *API) Configure(j []byte) {
-	fmt.Println("Configuring CLOCK!", j)
+	log.Println("Configuring CLOCK!", j)
 	var config configurationArgs
 	err := json.Unmarshal(j, &config)
 	if err != nil {
@@ -54,11 +53,11 @@ func (a *API) Configure(j []byte) {
 
 // Run main entry point to clock API
 func (a *API) Run(w api.Widget) {
-	fmt.Println("Running CLOCK")
+	log.Println("Running CLOCK")
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
 		ticker.Stop()
-		fmt.Println("STOPPING CLOCK")
+		log.Println("STOPPING CLOCK")
 	}()
 	for {
 		select {

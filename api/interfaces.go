@@ -36,7 +36,7 @@ type Widget interface {
 
 // BaseAPI base for all APIs
 type BaseAPI struct {
-	APIName string `json:"apiName"`
+	APIName string
 }
 
 // Name gets name of the api

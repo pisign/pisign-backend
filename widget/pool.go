@@ -1,7 +1,7 @@
 package widget
 
 import (
-	"fmt"
+	"log"
 )
 
 // Pool holds multiple widgets
@@ -46,18 +46,18 @@ func (pool *Pool) Start() {
 		select {
 		case widget := <-pool.Register:
 			pool.Widgets[widget] = true
-			fmt.Printf("New Widget: %s\n", widget)
-			fmt.Println("Size of Connection Pool: ", len(pool.Widgets))
-			pool.save()
+			log.Printf("New Widget: %s\n", widget)
+			log.Println("Size of Connection Pool: ", len(pool.Widgets))
+            pool.save()
 		case widget := <-pool.Unregister:
 			delete(pool.Widgets, widget)
-			fmt.Printf("Lost Widget: %s\n", widget)
-			fmt.Println("Size of Connection Pool: ", len(pool.Widgets))
+			log.Printf("Lost Widget: %s\n", widget)
+			log.Println("Size of Connection Pool: ", len(pool.Widgets))
 		case message := <-pool.Broadcast:
-			fmt.Println("Sending message to all widgets in Pool")
+			log.Println("Sending message to all widgets in Pool")
 			for widget := range pool.Widgets {
 				if err := widget.Conn.WriteJSON(message); err != nil {
-					fmt.Println("Error sending JSON:", err)
+					log.Println("Error sending JSON:", err)
 					return
 				}
 			}

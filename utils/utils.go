@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"reflect"
 )
@@ -58,5 +59,5 @@ func StructPrint(v interface{}) {
 		fieldFmt += "    " + line + "\n"
 	}
 
-	fmt.Println("type " + t.Name() + " {\n" + fieldFmt + "}\n")
+	log.Println("type " + t.Name() + " {\n" + fieldFmt + "}\n")
 }

@@ -2,7 +2,7 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 )
 
 // weather API response data types, should implement api.InternalAPI
@@ -79,7 +79,7 @@ type WeatherResponse struct {
 func (res *WeatherResponse) Serialize() []byte {
 	bytes, err := json.Marshal(res)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return []byte{}
 	}
 	return bytes
