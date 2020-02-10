@@ -59,12 +59,6 @@ func NewAPI() *API {
 	return a
 }
 
-// UnmarshalJSON for weather
-func (a *API) UnmarshalJSON(b []byte) error {
-	a.APIName = "WEATHER"
-	return nil
-}
-
 // Configure for weather
 func (a *API) Configure(j []byte) {
 	log.Println("Configuring WEATHER!")

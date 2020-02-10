@@ -11,7 +11,7 @@ import (
 // API yay
 type API struct {
 	api.BaseAPI
-	Location *time.Location
+	Location string
 	Format   string
 }
 
@@ -19,14 +19,16 @@ type API struct {
 func NewAPI() *API {
 	a := new(API)
 	a.APIName = "clock"
-	a.Location, _ = time.LoadLocation("Local")
+	a.Location = "Local"
 	return a
 }
 
-// UnmarshalJSON for clock
-func (a *API) UnmarshalJSON(b []byte) error {
-	a.APIName = "CLOCK"
-	return nil
+func (a *API) loc() *time.Location {
+	t, err := time.LoadLocation(a.Location)
+	if err != nil {
+		t, _ = time.LoadLocation("Local")
+	}
+	return t
 }
 
 type configurationArgs struct {
@@ -35,20 +37,20 @@ type configurationArgs struct {
 
 // Configure for clock
 func (a *API) Configure(j []byte) {
-	log.Println("Configuring CLOCK!", j)
+	log.Println("Configuring CLOCK!")
 	var config configurationArgs
 	err := json.Unmarshal(j, &config)
 	if err != nil {
 		log.Println("Error configuring Clock api:", err)
 		return
 	}
-	loc, err := time.LoadLocation(config.Location)
+	_, err = time.LoadLocation(config.Location)
 	if err != nil {
 		log.Printf("Could not load timezone %s: %s", config.Location, err)
 		return
 	}
-	a.Location = loc
-	log.Println("Clock configuration successful!", "a.Location = ", a.Location.String())
+	a.Location = config.Location
+	log.Println("Clock configuration successful!", "a = ", a)
 }
 
 // Run main entry point to clock API
@@ -65,7 +67,7 @@ func (a *API) Run(w api.Widget) {
 			return
 		default:
 			t := <-ticker.C
-			t = t.In(a.Location)
+			t = t.In(a.loc())
 			w.Send(t)
 		}
 	}

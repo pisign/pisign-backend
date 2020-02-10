@@ -36,8 +36,8 @@ func (pool *Pool) widgetList() []*Widget {
 
 func (pool *Pool) save() error {
 	widgets := pool.widgetList()
-	layout := Layout{Widgets: widgets}
-	return SaveLayout(pool.name, layout)
+	layout := Layout{Widgets: widgets, Name: pool.name}
+	return SaveLayout(layout)
 }
 
 // Start main entry point of a pool
@@ -48,7 +48,7 @@ func (pool *Pool) Start() {
 			pool.Widgets[widget] = true
 			log.Printf("New Widget: %s\n", widget)
 			log.Println("Size of Connection Pool: ", len(pool.Widgets))
-            pool.save()
+			pool.save()
 		case widget := <-pool.Unregister:
 			delete(pool.Widgets, widget)
 			log.Printf("Lost Widget: %s\n", widget)

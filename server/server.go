@@ -1,4 +1,7 @@
 // Package server much of the code comes from https://tutorialedge.net/projects/chat-system-in-go-and-react/part-4-handling-multiple-clients/
+// Two main routes:
+// - /ws creates a new websocket connection
+// - /layouts?name=<name> retrieves a given layout, stored in a `json` file on the server
 package server
 
 import (

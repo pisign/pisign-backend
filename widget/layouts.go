@@ -9,7 +9,8 @@ import (
 
 // Layout of multiple widgets
 type Layout struct {
-	Widgets []*Widget `json:"widgets"`
+	Name    string
+	Widgets []*Widget
 }
 
 func getFilename(name string) string {
@@ -34,12 +35,13 @@ func LoadLayout(name string) Layout {
 		log.Printf("Error Decoding layout %s: %v\n", name, err)
 		return Layout{}
 	}
-	fmt.Println("Layout: ", layout)
+	fmt.Printf("Layout: %+v\n", layout)
 	return layout
 }
 
 // SaveLayout stores the widgets to a local json file
-func SaveLayout(name string, layout Layout) error {
+func SaveLayout(layout Layout) error {
+	name := layout.Name
 	log.Printf("Saving layout %s\n", name)
 	dataFile, err := os.Create(getFilename(name))
 	if err != nil {

@@ -16,8 +16,6 @@ import (
 
 // Widget struct for a single frontend widget
 type Widget struct {
-	ID        int
-	APIName   string
 	API       api.API
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
@@ -34,9 +32,7 @@ func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
 	}
 
 	widget := &Widget{
-		ID:        len(pool.Widgets),
 		API:       a,
-		APIName:   apiName,
 		Conn:      conn,
 		Pool:      pool,
 		CloseChan: make(chan bool),
@@ -93,34 +89,32 @@ func (w *Widget) String() string {
 // UnmarshalJSON for widget
 func (w *Widget) UnmarshalJSON(b []byte) error {
 	//TODO: find better way to Unmarshal widget
-	var name struct {
-		APIName string
+	var a struct {
+		API api.BaseAPI
 	}
 
-	err := json.Unmarshal(b, &name)
+	err := json.Unmarshal(b, &a)
 	if err != nil {
 		log.Println("Could not unmarshal widget error 1: ", err)
 		return err
 	}
 	var t thing
-	switch name.APIName {
+	name := a.API.APIName
+	switch name {
 	case "weather":
-		t.API = new(weather.API)
+		t.API = weather.NewAPI()
 	case "clock":
-		t.API = new(clock.API)
+		t.API = clock.NewAPI()
 	default:
-		msg := fmt.Sprintf("Unknown api type: %s", name.APIName)
+		msg := fmt.Sprintf("Unknown api type: %s", name)
 		return errors.New(msg)
 	}
 	err = json.Unmarshal(b, &t)
+	log.Printf("API data: %+v\n", t.API)
 	w.API = t.API
-	w.APIName = t.APIName
-	w.ID = t.ID
 	return nil
 }
 
 type thing struct {
-	ID      int     `json:"id"`
-	API     api.API `json:"api"`
-	APIName string  `json:"apiName"`
+	API api.API
 }
