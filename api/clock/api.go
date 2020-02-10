@@ -1,7 +1,6 @@
 package clock
 
 import (
-	"encoding/json"
 	"log"
 	"time"
 
@@ -36,21 +35,27 @@ type configurationArgs struct {
 }
 
 // Configure for clock
-func (a *API) Configure(j []byte) {
+func (a *API) Configure(i map[string]interface{}) {
 	log.Println("Configuring CLOCK!")
-	var config configurationArgs
-	err := json.Unmarshal(j, &config)
-	if err != nil {
-		log.Println("Error configuring Clock api:", err)
-		return
+	loc, ok := i["Location"].(string)
+	if !ok {
+		log.Printf("clock: invalid location: %v\n", loc)
+	} else {
+		a.Location = loc
 	}
-	_, err = time.LoadLocation(config.Location)
-	if err != nil {
-		log.Printf("Could not load timezone %s: %s", config.Location, err)
-		return
-	}
-	a.Location = config.Location
-	log.Println("Clock configuration successful!", "a = ", a)
+	// var config configurationArgs
+	// err := json.Unmarshal(j, &config)
+	// if err != nil {
+	// 	log.Println("Error configuring Clock api:", err)
+	// 	return
+	// }
+	// _, err = time.LoadLocation(config.Location)
+	// if err != nil {
+	// 	log.Printf("Could not load timezone %s: %s", config.Location, err)
+	// 	return
+	// }
+	// a.Location = config.Location
+	// log.Println("Clock configuration successful!", "a = ", a)
 }
 
 // Run main entry point to clock API

@@ -1,7 +1,6 @@
 package weather
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -60,13 +59,13 @@ func NewAPI() *API {
 }
 
 // Configure for weather
-func (a *API) Configure(j []byte) {
+func (a *API) Configure(j map[string]interface{}) {
 	log.Println("Configuring WEATHER!")
-	err := json.Unmarshal(j, &a)
-	if err != nil {
-		log.Println("Error configuring weather api:", err)
-		return
-	}
+	// err := json.Unmarshal(j, &a)
+	// if err != nil {
+	// 	log.Println("Error configuring weather api:", err)
+	// 	return
+	// }
 }
 
 // Run main entry point to weather API

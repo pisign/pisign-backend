@@ -17,6 +17,7 @@ import (
 // Widget struct for a single frontend widget
 type Widget struct {
 	API       api.API
+	Position  map[string]interface{}
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
 	CloseChan chan bool       `json:"-"`
@@ -58,15 +59,25 @@ func (w *Widget) Read() {
 	}()
 
 	for {
-		messageType, p, err := w.Conn.ReadMessage()
+		_, p, err := w.Conn.ReadMessage()
 		if err != nil {
 			log.Println("Read->w.Conn.ReadMessage", err)
 			return
 		}
 
-		message := Message{Type: messageType, Body: string(p)}
-		log.Printf("Message Received from %s: %+v\n", w, message)
-		w.API.Configure(p)
+		var data struct {
+			API      map[string]interface{}
+			Position map[string]interface{}
+		}
+		log.Printf("message: %v\n", p)
+		err = json.Unmarshal(p, &data)
+		if err != nil {
+			log.Println("Json Unmarshal to data struct:", err)
+			return
+		}
+		log.Printf("data with position: %+v\n", data)
+		w.Position = data.Position
+		w.API.Configure(data.API)
 		w.Pool.save()
 	}
 }
@@ -112,9 +123,11 @@ func (w *Widget) UnmarshalJSON(b []byte) error {
 	err = json.Unmarshal(b, &t)
 	log.Printf("API data: %+v\n", t.API)
 	w.API = t.API
+	w.Position = t.Position
 	return nil
 }
 
 type thing struct {
-	API api.API
+	API      api.API
+	Position map[string]interface{}
 }
