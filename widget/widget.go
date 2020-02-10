@@ -2,6 +2,8 @@ package widget
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 
 	"github.com/pisign/pisign-backend/api/clock"
@@ -15,7 +17,7 @@ import (
 // Widget struct for a single frontend widget
 type Widget struct {
 	ID        int
-	APIName   string          
+	APIName   string
 	API       api.API
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
@@ -101,7 +103,6 @@ func (w *Widget) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	var t thing
-	fmt.Printf("JSON DATA: %v\n", t)
 	switch name.APIName {
 	case "weather":
 		t.API = new(weather.API)
