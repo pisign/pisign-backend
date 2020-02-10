@@ -11,9 +11,9 @@ import (
 
 // API yay
 type API struct {
-	api.BaseAPI `json:"-"`
-	Location    *time.Location `json:"location"`
-	Format      string         `json:"format"`
+	api.BaseAPI
+	Location *time.Location
+	Format   string
 }
 
 // NewAPI creates a new clock api for a client
@@ -25,7 +25,7 @@ func NewAPI() *API {
 }
 
 type configurationArgs struct {
-	Location string `json:"location"`
+	Location string
 }
 
 // Configure for clock

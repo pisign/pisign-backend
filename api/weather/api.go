@@ -48,8 +48,8 @@ func (a *API) Data() string {
 // API yay
 type API struct {
 	api.BaseAPI
-	Zip    int    `json:"zip"`
-	APIKey string `json:"apiKey"`
+	Zip    int
+	APIKey string
 }
 
 // NewAPI creates a new weather api for a client

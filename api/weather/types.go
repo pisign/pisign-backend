@@ -58,6 +58,6 @@ type OpenWeatherResponse struct {
 	Sys        sys
 	Timezone   float64
 	ID         float64
-	Name       string `json:"name"`
+	Name       string
 	COD        float64
 }
