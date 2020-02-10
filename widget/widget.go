@@ -39,7 +39,6 @@ func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
 	pool.Register <- widget
 	go widget.Read()
 	go widget.API.Run(widget)
-	widget.Conn.WriteJSON(widget)
 	return nil
 }
 
@@ -65,12 +64,13 @@ func (w *Widget) Read() {
 
 		message := Message{Type: messageType, Body: string(p)}
 		fmt.Printf("Message Received from %s: %+v\n", w, message)
+		w.API.Configure(p)
 	}
 }
 
 // Send out to client through websocket
-func (w *Widget) Send() {
-	fmt.Printf("Sending data to: %v\n", w)
+func (w *Widget) Send(msg interface{}) {
+	w.Conn.WriteJSON(msg)
 }
 
 // Close returns a channel that signifies the closing of the widget

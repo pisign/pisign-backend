@@ -19,7 +19,7 @@ type ExternalAPI interface {
 
 // API is the entrance point of all apis to connect to a client
 type API interface {
-	Configure(json string)
+	Configure(j []byte)
 	Name() string
 	Run(w Widget)
 }
@@ -27,7 +27,7 @@ type API interface {
 // Widget interface
 type Widget interface {
 	Read()
-	Send()
+	Send(interface{})
 	Close() chan bool
 }
 

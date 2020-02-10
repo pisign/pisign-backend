@@ -21,19 +21,48 @@ window.addEventListener("load", function(evt) {
 
     var widgets = []
 
-    function newWidget() {
+    function newWidget(ws) {
         var widgetId = widgets.length;
-        var widget = document.createElement("div")
-        widget.classList.add("widget")
-        widgetsDiv.appendChild(widget)
-        widgets.push(widget)
-        print("Creating widget " + widgetId)
+        var widget = document.createElement("div");
+        widget.classList.add("widget");
+        widgetsDiv.appendChild(widget);
+        widgets.push(widget);
+        print("Creating widget " + widgetId);
 
-        return widget
+        var widgetData = document.createElement("div");
+
+        var inputID = `apiInput-${widgetId}`
+        var sendID = `apiSend-${widgetId}`
+
+        var widgetInputDiv = document.createElement("div")
+        var widgetInputText = document.createElement("input")
+        widgetInputText.type = "text"
+        widgetInputText.value = "data"
+
+        widgetInputSend = document.createElement("button")
+        widgetInputSend.innerHTML = "Send Message"
+        
+        widgetInputDiv.appendChild(widgetInputText)
+        widgetInputDiv.appendChild(widgetInputSend)
+
+        widgetInputSend.onclick = function(evt) {
+            try {
+                data = JSON.parse(widgetInputText.value);
+                ws.send(JSON.stringify(data))
+                print("Sending Mesage: " + data);
+            } catch (e) {
+                print("Error parsing json message: " + widgetInputText.value);
+            }
+        };
+
+        widget.appendChild(widgetInputDiv);
+        widget.appendChild(widgetData);
+
+        return [widget, widgetData]
     }
 
     function addWidget(ws) {
-        var widget = newWidget()
+        var [widget, widgetData] = newWidget(ws)
 
         ws.onopen = function(evt) {
             print("OPEN")
@@ -48,9 +77,9 @@ window.addEventListener("load", function(evt) {
         }
 
         ws.onmessage = function(evt) {
-            print("RESPONSE: " + evt.data);
+            //print("RESPONSE: " + evt.data);
             var data = JSON.parse(evt.data);
-            widget.innerHTML = "From server: " + JSON.stringify(data);
+            widgetData.innerHTML = "From server: " + JSON.stringify(data);
         }
     }
     document.getElementById("create").onclick = function(evt) {
@@ -65,9 +94,9 @@ window.addEventListener("load", function(evt) {
 <table>
 <tr><td valign="top" width="50%">
 <p>Click "Create" to create a new connection to the server, 
-<p>
+</p>
 <form>
-<p><input id="apiInput" type="text" value="weather">
+<input id="apiInput" type="text" value="weather">
 <button id="create">Create Widget</button>
 </form>
 </td><td valign="top" width="50%">
