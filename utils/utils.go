@@ -35,8 +35,9 @@ func ParseResponse(resp *http.Response) []byte {
 }
 
 // ParseJSON parses byte slice body into struct i
-func ParseJSON(body []byte, i interface{}) {
-	json.Unmarshal(body, i)
+func ParseJSON(body []byte, i interface{}) error {
+	err := json.Unmarshal(body, i)
+	return err
 }
 
 // StructPrint prints out the structure of a Struct
