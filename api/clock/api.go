@@ -5,8 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/pisign/pisign-backend/utils"
-
 	"github.com/pisign/pisign-backend/api"
 )
 
@@ -33,31 +31,24 @@ func (a *API) loc() *time.Location {
 	return t
 }
 
-type configurationArgs struct {
-	Location string
-}
-
 // Configure for clock
 func (a *API) Configure(body *json.RawMessage) {
 	log.Println("Configuring CLOCK!")
-	i, err := utils.ParseJSONMap(*body)
-	var loc string
-	if err = json.Unmarshal(*i["Location"], &loc); err == nil {
-		a.Location = loc
+
+	var config struct {
+		Location string
 	}
-	// var config configurationArgs
-	// err := json.Unmarshal(j, &config)
-	// if err != nil {
-	// 	log.Println("Error configuring Clock api:", err)
-	// 	return
-	// }
-	// _, err = time.LoadLocation(config.Location)
-	// if err != nil {
-	// 	log.Printf("Could not load timezone %s: %s", config.Location, err)
-	// 	return
-	// }
-	// a.Location = config.Location
-	// log.Println("Clock configuration successful!", "a = ", a)
+
+	if err := json.Unmarshal(*body, &config); err == nil {
+		_, err = time.LoadLocation(config.Location)
+		if err != nil {
+			log.Printf("Could not load timezone %s: %s", config.Location, err)
+			return
+		}
+		a.Location = config.Location
+		log.Println("Clock configuration successful!", "a = ", a)
+	}
+
 }
 
 // Run main entry point to clock API

@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/pisign/pisign-backend/utils"
-
 	"github.com/pisign/pisign-backend/api/clock"
 	"github.com/pisign/pisign-backend/api/weather"
 
@@ -19,7 +17,7 @@ import (
 // Widget struct for a single frontend widget
 type Widget struct {
 	API       api.API
-	Position  map[string]interface{}
+	Position  *json.RawMessage
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
 	CloseChan chan bool       `json:"-"`
@@ -67,22 +65,18 @@ func (w *Widget) Read() {
 			return
 		}
 		log.Printf("message: %v\n", p)
-		message, err := utils.ParseJSONMap(p)
+		var message struct {
+			API      *json.RawMessage
+			Position *json.RawMessage
+		}
+		json.Unmarshal(p, &message)
 		if err != nil {
 			log.Println("Widget Message Parsing:", err)
 			continue
 		}
 
-		if API, ok := message["API"]; ok {
-			w.API.Configure(API)
-		}
-
-		if pos, ok := message["Position"]; ok && pos != nil {
-			log.Printf("Setting position: %s\n", *pos)
-			if err = json.Unmarshal(*pos, &w.Position); err != nil {
-				log.Printf("Pos err: %v\n", err)
-			}
-		}
+		w.API.Configure(message.API)
+		w.Position = message.Position
 
 		log.Printf("widget with new data: %+v\n", w)
 		w.Pool.save()
@@ -105,51 +99,43 @@ func (w *Widget) String() string {
 }
 
 // UnmarshalJSON for widget
-func (w *Widget) UnmarshalJSON(b []byte) error {
+func (w *Widget) UnmarshalJSON(body []byte) error {
 	//TODO: find better way to Unmarshal widget
-	fields, err := utils.ParseJSONMap(b)
+	log.Printf("w.API: %v\n", w.API)
+	var fields struct {
+		API      *json.RawMessage
+		Position *json.RawMessage
+	}
+	err := json.Unmarshal(body, &fields)
 	if err != nil {
 		log.Println("Could not unmarshal widget: ", err)
 		return err
 	}
 
-	API, err := utils.ParseJSONMap(*fields["API"])
-	if err != nil {
-		log.Printf("Could not unmarshal widget: no `API` field present: %v\n", err)
-		return err
+	var APIFields struct {
+		Name string
 	}
 
-	var name string
-	err = json.Unmarshal(*API["Name"], &name)
+	err = json.Unmarshal(*fields.API, &APIFields)
 	if err != nil {
 		log.Printf("Could not unmarshal widget: no `API.Name` field present: %v\n", err)
 		return err
 	}
-	switch string(name) {
+	log.Printf("fields: %v\n", fields)
+	log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
+
+	switch APIFields.Name {
 	case "weather":
 		w.API = weather.NewAPI()
 	case "clock":
 		w.API = clock.NewAPI()
 	default:
-		msg := fmt.Sprintf("Unknown api type: %s", name)
+		msg := fmt.Sprintf("Unknown api type: %s", APIFields.Name)
 		return errors.New(msg)
 	}
 
-	err = json.Unmarshal(*fields["API"], w.API)
-	if err != nil {
-		log.Println("Could not unmarshal widget.API:", err)
-		return err
-	}
-	log.Printf("API data: %+v\n", w.API)
+	json.Unmarshal(*fields.API, w.API)
+	w.Position = fields.Position
 
-	position, ok := fields["Position"]
-	if ok && position != nil {
-		log.Printf("ok: %v, Position: %v\n", ok, position)
-		err = json.Unmarshal(*position, &w.Position)
-		if err != nil {
-			log.Println("Could not unmarshal widget.Position:", err)
-			return err
-		}
-	}
 	return nil
 }

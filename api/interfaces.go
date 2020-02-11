@@ -25,7 +25,8 @@ type API interface {
 	Run(w Widget)
 }
 
-// Widget interface
+// TODO: See if we can remove this interface without adding a circular dependency?
+// Widget interface, needed to avoid circular dependency with widget package
 type Widget interface {
 	json.Unmarshaler
 	Read()
