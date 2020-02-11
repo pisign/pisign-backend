@@ -1,8 +1,11 @@
 package clock
 
 import (
+	"encoding/json"
 	"log"
 	"time"
+
+	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/pisign/pisign-backend/api"
 )
@@ -35,12 +38,11 @@ type configurationArgs struct {
 }
 
 // Configure for clock
-func (a *API) Configure(i map[string]interface{}) {
+func (a *API) Configure(body *json.RawMessage) {
 	log.Println("Configuring CLOCK!")
-	loc, ok := i["Location"].(string)
-	if !ok {
-		log.Printf("clock: invalid location: %v\n", loc)
-	} else {
+	i, err := utils.ParseJSONMap(*body)
+	var loc string
+	if err = json.Unmarshal(*i["Location"], &loc); err == nil {
 		a.Location = loc
 	}
 	// var config configurationArgs

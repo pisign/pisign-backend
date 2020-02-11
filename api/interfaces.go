@@ -21,8 +21,7 @@ type ExternalAPI interface {
 
 // API is the entrance point of all apis to connect to a client
 type API interface {
-	Configure(i map[string]interface{})
-	Name() string
+	Configure(body *json.RawMessage)
 	Run(w Widget)
 }
 
@@ -36,7 +35,7 @@ type Widget interface {
 
 // BaseAPI base for all APIs
 type BaseAPI struct {
-	APIName string
+	APIName string `json:"Name"`
 }
 
 // Name gets name of the api

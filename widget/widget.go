@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/pisign/pisign-backend/utils"
+
 	"github.com/pisign/pisign-backend/api/clock"
 	"github.com/pisign/pisign-backend/api/weather"
 
@@ -64,20 +66,25 @@ func (w *Widget) Read() {
 			log.Println("Read->w.Conn.ReadMessage", err)
 			return
 		}
-
-		var data struct {
-			API      map[string]interface{}
-			Position map[string]interface{}
-		}
 		log.Printf("message: %v\n", p)
-		err = json.Unmarshal(p, &data)
+		message, err := utils.ParseJSONMap(p)
 		if err != nil {
-			log.Println("Json Unmarshal to data struct:", err)
-			return
+			log.Println("Widget Message Parsing:", err)
+			continue
 		}
-		log.Printf("data with position: %+v\n", data)
-		w.Position = data.Position
-		w.API.Configure(data.API)
+
+		if API, ok := message["API"]; ok {
+			w.API.Configure(API)
+		}
+
+		if pos, ok := message["Position"]; ok && pos != nil {
+			log.Printf("Setting position: %s\n", *pos)
+			if err = json.Unmarshal(*pos, &w.Position); err != nil {
+				log.Printf("Pos err: %v\n", err)
+			}
+		}
+
+		log.Printf("widget with new data: %+v\n", w)
 		w.Pool.save()
 	}
 }
@@ -100,34 +107,49 @@ func (w *Widget) String() string {
 // UnmarshalJSON for widget
 func (w *Widget) UnmarshalJSON(b []byte) error {
 	//TODO: find better way to Unmarshal widget
-	var a struct {
-		API api.BaseAPI
-	}
-
-	err := json.Unmarshal(b, &a)
+	fields, err := utils.ParseJSONMap(b)
 	if err != nil {
-		log.Println("Could not unmarshal widget error 1: ", err)
+		log.Println("Could not unmarshal widget: ", err)
 		return err
 	}
-	var t thing
-	name := a.API.APIName
-	switch name {
+
+	API, err := utils.ParseJSONMap(*fields["API"])
+	if err != nil {
+		log.Printf("Could not unmarshal widget: no `API` field present: %v\n", err)
+		return err
+	}
+
+	var name string
+	err = json.Unmarshal(*API["Name"], &name)
+	if err != nil {
+		log.Printf("Could not unmarshal widget: no `API.Name` field present: %v\n", err)
+		return err
+	}
+	switch string(name) {
 	case "weather":
-		t.API = weather.NewAPI()
+		w.API = weather.NewAPI()
 	case "clock":
-		t.API = clock.NewAPI()
+		w.API = clock.NewAPI()
 	default:
 		msg := fmt.Sprintf("Unknown api type: %s", name)
 		return errors.New(msg)
 	}
-	err = json.Unmarshal(b, &t)
-	log.Printf("API data: %+v\n", t.API)
-	w.API = t.API
-	w.Position = t.Position
-	return nil
-}
 
-type thing struct {
-	API      api.API
-	Position map[string]interface{}
+	err = json.Unmarshal(*fields["API"], w.API)
+	if err != nil {
+		log.Println("Could not unmarshal widget.API:", err)
+		return err
+	}
+	log.Printf("API data: %+v\n", w.API)
+
+	position, ok := fields["Position"]
+	if ok && position != nil {
+		log.Printf("ok: %v, Position: %v\n", ok, position)
+		err = json.Unmarshal(*position, &w.Position)
+		if err != nil {
+			log.Println("Could not unmarshal widget.Position:", err)
+			return err
+		}
+	}
+	return nil
 }

@@ -20,7 +20,7 @@ func NewPool() *Pool {
 		Unregister: make(chan *Widget),
 		Widgets:    make(map[*Widget]bool),
 		Broadcast:  make(chan Message),
-		name:       "unknown",
+		name:       "main",
 	}
 }
 

@@ -39,6 +39,16 @@ func ParseJSON(body []byte, i interface{}) {
 	json.Unmarshal(body, i)
 }
 
+// ParseJSONMap parses json byte slice into a generic key-value map
+func ParseJSONMap(body []byte) (map[string]*json.RawMessage, error) {
+	var data map[string]*json.RawMessage
+	err := json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 // StructPrint prints out the structure of a Struct
 func StructPrint(v interface{}) {
 
