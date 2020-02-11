@@ -1,3 +1,4 @@
+// Package manager spins up new api instances to connect to client widgets based on name
 package manager
 
 import (
@@ -13,12 +14,8 @@ type InvalidAPIError struct {
 	APIName string
 }
 
-func (e InvalidAPIError) Error() string {
-	return fmt.Sprintf("Invalid API: %s", e.APIName)
-}
-
-// Connect connects a client to a new API
-func Connect(name string) (api.API, error) {
+// NewAPI returns a new instance of a specific API based on the name
+func NewAPI(name string) (api.API, error) {
 	switch name {
 	case "weather":
 		return weather.NewAPI(), nil
@@ -27,4 +24,8 @@ func Connect(name string) (api.API, error) {
 	default:
 		return nil, InvalidAPIError{name}
 	}
+}
+
+func (e InvalidAPIError) Error() string {
+	return fmt.Sprintf("Invalid API: %s", e.APIName)
 }

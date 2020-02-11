@@ -1,3 +1,4 @@
+// Package clock retrieves time data from the server and forwards it to the client
 package clock
 
 import (
@@ -8,14 +9,14 @@ import (
 	"github.com/pisign/pisign-backend/api"
 )
 
-// API yay
+// API for clock
 type API struct {
 	api.BaseAPI
 	Location string
 	Format   string
 }
 
-// NewAPI creates a new clock api for a client
+// NewAPI creates a new clock api
 func NewAPI() *API {
 	a := new(API)
 	a.APIName = "clock"

@@ -4,12 +4,11 @@ import (
 	"log"
 )
 
-// Pool holds multiple widgets
+// Pool holds multiple widgets and handles registration and deletion
 type Pool struct {
 	Register   chan *Widget
 	Unregister chan *Widget
 	Widgets    map[*Widget]bool
-	Broadcast  chan Message
 	name       string
 }
 
@@ -19,7 +18,6 @@ func NewPool() *Pool {
 		Register:   make(chan *Widget),
 		Unregister: make(chan *Widget),
 		Widgets:    make(map[*Widget]bool),
-		Broadcast:  make(chan Message),
 		name:       "main",
 	}
 }
@@ -53,14 +51,6 @@ func (pool *Pool) Start() {
 			delete(pool.Widgets, widget)
 			log.Printf("Lost Widget: %s\n", widget)
 			log.Println("Size of Connection Pool: ", len(pool.Widgets))
-		case message := <-pool.Broadcast:
-			log.Println("Sending message to all widgets in Pool")
-			for widget := range pool.Widgets {
-				if err := widget.Conn.WriteJSON(message); err != nil {
-					log.Println("Error sending JSON:", err)
-					return
-				}
-			}
 		}
 	}
 }

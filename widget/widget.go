@@ -1,13 +1,12 @@
+// Package widget creates and manages widgets from the client
+// Each 'widget' represents a single widget on the client, and has its own websocket connection
 package widget
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"log"
 
-	"github.com/pisign/pisign-backend/api/clock"
-	"github.com/pisign/pisign-backend/api/weather"
+	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/api"
@@ -25,7 +24,7 @@ type Widget struct {
 
 // Create creates a new widget, with a valid api attached
 func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
-	a, err := manager.Connect(apiName)
+	a, err := manager.NewAPI(apiName)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()
@@ -43,12 +42,6 @@ func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
 	go widget.Read()
 	go widget.API.Run(widget)
 	return nil
-}
-
-// Message holds a messsage
-type Message struct {
-	Type int
-	Body string
 }
 
 func (w *Widget) Read() {
@@ -69,7 +62,7 @@ func (w *Widget) Read() {
 			API      *json.RawMessage
 			Position *json.RawMessage
 		}
-		json.Unmarshal(p, &message)
+		utils.ParseJSON(p, &message)
 		if err != nil {
 			log.Println("Widget Message Parsing:", err)
 			continue
@@ -99,6 +92,7 @@ func (w *Widget) String() string {
 }
 
 // UnmarshalJSON for widget
+// Dynamically creates correct type of api for properly unmarshalling
 func (w *Widget) UnmarshalJSON(body []byte) error {
 	//TODO: find better way to Unmarshal widget
 	log.Printf("w.API: %v\n", w.API)
@@ -106,7 +100,7 @@ func (w *Widget) UnmarshalJSON(body []byte) error {
 		API      *json.RawMessage
 		Position *json.RawMessage
 	}
-	err := json.Unmarshal(body, &fields)
+	err := utils.ParseJSON(body, &fields)
 	if err != nil {
 		log.Println("Could not unmarshal widget: ", err)
 		return err
@@ -116,7 +110,7 @@ func (w *Widget) UnmarshalJSON(body []byte) error {
 		Name string
 	}
 
-	err = json.Unmarshal(*fields.API, &APIFields)
+	err = utils.ParseJSON(*fields.API, &APIFields)
 	if err != nil {
 		log.Printf("Could not unmarshal widget: no `API.Name` field present: %v\n", err)
 		return err
@@ -124,17 +118,13 @@ func (w *Widget) UnmarshalJSON(body []byte) error {
 	log.Printf("fields: %v\n", fields)
 	log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
 
-	switch APIFields.Name {
-	case "weather":
-		w.API = weather.NewAPI()
-	case "clock":
-		w.API = clock.NewAPI()
-	default:
-		msg := fmt.Sprintf("Unknown api type: %s", APIFields.Name)
-		return errors.New(msg)
+	w.API, err = manager.NewAPI(APIFields.Name)
+	if err != nil {
+		log.Printf("Unknown API type: %s\n", APIFields.Name)
+		return err
 	}
 
-	json.Unmarshal(*fields.API, w.API)
+	utils.ParseJSON(*fields.API, w.API)
 	w.Position = fields.Position
 
 	return nil
