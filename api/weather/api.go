@@ -77,7 +77,7 @@ func (a *API) Configure(body *json.RawMessage) {
 // Run main entry point to weather API
 func (a *API) Run(w api.Widget) {
 	log.Println("Running WEATHER")
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(10 * time.Minute)
 	defer func() {
 		ticker.Stop()
 		log.Println("STOPPING WEATHER")
