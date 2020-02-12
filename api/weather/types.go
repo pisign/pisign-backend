@@ -71,6 +71,9 @@ type OpenWeatherResponse struct {
 func (o *OpenWeatherResponse) Transform() api.InternalAPI {
 	weatherResponse := types.WeatherResponse{
 		Name: o.Name,
+		Main: types.Main{
+			Temp: kelvinToF(o.Main.Temp),
+		},
 	}
 
 	return &weatherResponse

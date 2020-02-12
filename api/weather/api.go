@@ -21,29 +21,33 @@ func (a *API) get() api.ExternalAPI {
 		fmt.Fprintf(os.Stderr, "No API key found for weather API")
 		panic("no api key found")
 	}
-
 	url := buildurl(zipcode, apikey)
 	resp := utils.GetAPIData(url)
 	defer resp.Body.Close()
 
 	body := utils.ParseResponse(resp)
-
 	var openWeatherResponse OpenWeatherResponse
-	utils.ParseJSON(body, openWeatherResponse)
+	utils.ParseJSON(body, &openWeatherResponse)
 	return &openWeatherResponse
 }
 
 func (a *API) data() api.InternalAPI {
-	if time.Now().Sub(a.LastCalled) < (time.Minute * 1) {
+	if time.Now().Sub(a.LastCalled) < (time.Second * 10) {
 		log.Println("using cached value")
 		return &a.CachedResponse
 	}
 
 	response := a.get().Transform()
-	log.Println("hitting weather api")
 	res := response.(*types.WeatherResponse)
-	a.LastCalled = time.Now()
-	a.CachedResponse = *res
+
+	if res.COD > 300 {
+		log.Println("API error")
+		log.Println(res)
+	} else {
+		a.LastCalled = time.Now()
+		a.CachedResponse = *res
+	}
+
 	return res
 }
 
@@ -77,7 +81,7 @@ func (a *API) Configure(body *json.RawMessage) {
 // Run main entry point to weather API
 func (a *API) Run(w api.Widget) {
 	log.Println("Running WEATHER")
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
 		log.Println("STOPPING WEATHER")

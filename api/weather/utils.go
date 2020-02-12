@@ -11,3 +11,7 @@ func buildurl(zipcode int, apikey string) string {
 	url := fmt.Sprintf("%s?zip=%d,us&APPID=%s", endpoint, zipcode, apikey)
 	return url
 }
+
+func kelvinToF(k float64) float64 {
+	return (k-273.15)*(9/5) + 32
+}
