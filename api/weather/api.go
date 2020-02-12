@@ -7,12 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 )
 
-func (a *API) get() api.ExternalAPI {
+func (a *API) get() types.ExternalAPI {
 	apikey := a.APIKey
 	zipcode := a.Zip
 
@@ -31,7 +30,7 @@ func (a *API) get() api.ExternalAPI {
 	return &openWeatherResponse
 }
 
-func (a *API) data() api.InternalAPI {
+func (a *API) data() types.InternalAPI {
 	if time.Now().Sub(a.LastCalled) < (time.Second * 10) {
 		log.Println("using cached value")
 		return &a.CachedResponse
@@ -53,7 +52,7 @@ func (a *API) data() api.InternalAPI {
 
 // API yay
 type API struct {
-	api.BaseAPI
+	types.BaseAPI
 	Zip        int
 	APIKey     string
 	LastCalled time.Time
@@ -79,7 +78,7 @@ func (a *API) Configure(body *json.RawMessage) {
 }
 
 // Run main entry point to weather API
-func (a *API) Run(w api.Widget) {
+func (a *API) Run() {
 	log.Println("Running WEATHER")
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
@@ -88,11 +87,11 @@ func (a *API) Run(w api.Widget) {
 	}()
 	for {
 		select {
-		case <-w.Close():
+		case <-a.Widget.Close():
 			return
 		default:
 			<-ticker.C
-			w.Send(a.data())
+			a.Widget.Send(a.data())
 		}
 	}
 }

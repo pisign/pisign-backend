@@ -6,16 +6,16 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/gorilla/websocket"
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/api/manager"
 )
 
 // Widget struct for a single frontend widget
 type Widget struct {
-	API       api.API
+	API       types.API
 	Position  *json.RawMessage
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
@@ -37,10 +37,11 @@ func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
 		Pool:      pool,
 		CloseChan: make(chan bool),
 	}
+	a.SetWidget(widget)
 
 	pool.Register <- widget
 	go widget.Read()
-	go widget.API.Run(widget)
+	go widget.API.Run()
 	return nil
 }
 
@@ -115,7 +116,6 @@ func (w *Widget) UnmarshalJSON(body []byte) error {
 		log.Printf("Could not unmarshal widget: no `API.Name` field present: %v\n", err)
 		return err
 	}
-	log.Printf("fields: %v\n", fields)
 	log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
 
 	w.API, err = manager.NewAPI(APIFields.Name)

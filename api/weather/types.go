@@ -1,7 +1,6 @@
 package weather
 
 import (
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -68,7 +67,7 @@ type OpenWeatherResponse struct {
 }
 
 // Transform turns the OpenWeatherResponse into a WeatherResponse
-func (o *OpenWeatherResponse) Transform() api.InternalAPI {
+func (o *OpenWeatherResponse) Transform() types.InternalAPI {
 	weatherResponse := types.WeatherResponse{
 		Name: o.Name,
 		Main: types.Main{
