@@ -35,14 +35,16 @@ func (a *API) get() api.ExternalAPI {
 
 func (a *API) data() api.InternalAPI {
 	if time.Now().Sub(a.LastCalled) < (time.Minute * 1) {
-		log.Print("using cached value")
+		log.Println("using cached value")
 		return &a.CachedResponse
 	}
 
 	response := a.get().Transform()
-	a.CachedResponse = response.(types.WeatherResponse)
-	return response
-
+	log.Println("hitting weather api")
+	res := response.(*types.WeatherResponse)
+	a.LastCalled = time.Now()
+	a.CachedResponse = *res
+	return res
 }
 
 // API yay
