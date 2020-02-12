@@ -62,11 +62,11 @@ func NewAPI() *API {
 // Configure for weather
 func (a *API) Configure(body *json.RawMessage) {
 	log.Println("Configuring WEATHER!")
-	// err := json.Unmarshal(j, &a)
-	// if err != nil {
-	// 	log.Println("Error configuring weather api:", err)
-	// 	return
-	// }
+	err := json.Unmarshal(*body, a)
+	if err != nil {
+		log.Println("Error configuring weather api:", err)
+		return
+	}
 }
 
 // Run main entry point to weather API
