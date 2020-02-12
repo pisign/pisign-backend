@@ -1,10 +1,5 @@
 package types
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 // weather API response data types, should implement api.InternalAPI
 
 // Coord contains the lat and long
@@ -75,12 +70,7 @@ type WeatherResponse struct {
 	Zipcode    float64
 }
 
-// Serialize serializes the WeatherResponse
-func (w *WeatherResponse) Serialize() []byte {
-	bytes, err := json.Marshal(w)
-	if err != nil {
-		fmt.Println(err.Error())
-		return []byte{}
-	}
-	return bytes
+// Cache caches the response
+func (w WeatherResponse) Cache() {
+	// TODO figure out how to cache these results for later, use something like redis?
 }

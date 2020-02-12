@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"reflect"
 )
 
@@ -34,8 +36,9 @@ func ParseResponse(resp *http.Response) []byte {
 }
 
 // ParseJSON parses byte slice body into struct i
-func ParseJSON(body []byte, i interface{}) {
-	json.Unmarshal(body, i)
+func ParseJSON(body []byte, i interface{}) error {
+	err := json.Unmarshal(body, i)
+	return err
 }
 
 // StructPrint prints out the structure of a Struct
@@ -59,4 +62,24 @@ func StructPrint(v interface{}) {
 	}
 
 	fmt.Println("type " + t.Name() + " {\n" + fieldFmt + "}\n")
+}
+
+// CreateDirectory checks if a directory exists and if not creates it
+// taken from https://www.socketloop.com/tutorials/golang-check-if-directory-exist-and-create-if-does-not-exist
+func CreateDirectory(dirName string) error {
+	src, err := os.Stat(dirName)
+
+	if os.IsNotExist(err) {
+		errDir := os.MkdirAll(dirName, 0755)
+		if errDir != nil {
+			return err
+		}
+		log.Printf("Created directory: '%s'\n", dirName)
+	}
+
+	if src.Mode().IsRegular() {
+		return fmt.Errorf("CreateDirectory: '%s' already exists as a file, not a directory", dirName)
+
+	}
+	return nil
 }

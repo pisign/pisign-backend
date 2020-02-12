@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    .widget {
+        border: 2px dashed;
+        margin-top: 10px;
+    }
+</style>
+<script> 
+
+window.addEventListener("load", function(evt) {
+    var output = document.getElementById("output");
+    var widgetsDiv = document.getElementById("widgets");
+    var print = function(message) {
+        var d = document.createElement("div");
+        d.innerHTML = message;
+        output.appendChild(d);
+    };
+
+    var widgets = []
+
+    function newWidget(ws) {
+        var widgetId = widgets.length;
+        var widget = document.createElement("div");
+        widget.classList.add("widget");
+        widgetsDiv.appendChild(widget);
+        widgets.push(widget);
+        print("Creating widget " + widgetId);
+
+        var widgetData = document.createElement("div");
+
+        var inputID = `apiInput-${widgetId}`
+        var sendID = `apiSend-${widgetId}`
+
+        var widgetInputDiv = document.createElement("div")
+        var widgetInputText = document.createElement("input")
+        widgetInputText.type = "text"
+        widgetInputText.value = `{"Position":{"x": 5, "y": 10}, "API":{"Location":"America/Chicago"}}`
+
+        widgetInputSend = document.createElement("button")
+        widgetInputSend.innerHTML = "Send Message"
+        
+        widgetInputDiv.appendChild(widgetInputText)
+        widgetInputDiv.appendChild(widgetInputSend)
+
+        widgetInputSend.onclick = function(evt) {
+            try {
+                data = JSON.parse(widgetInputText.value);
+                ws.send(JSON.stringify(data))
+                print("Sending Mesage: " + data);
+            } catch (e) {
+                print("Error parsing json message: " + widgetInputText.value);
+            }
+        };
+
+        widget.appendChild(widgetInputDiv);
+        widget.appendChild(widgetData);
+
+        return [widget, widgetData]
+    }
+
+    function addWidget(ws) {
+        var [widget, widgetData] = newWidget(ws)
+
+        ws.onopen = function(evt) {
+            print("OPEN")
+        }
+        ws.onclose = function(evt) {
+            print("CLOSE");
+            widgetsDiv.removeChild(widget)
+            ws = null
+        }
+        ws.onerror = function(evt) {
+            print("ERROR: " + evt.data);
+        }
+
+        ws.onmessage = function(evt) {
+            //print("RESPONSE: " + evt.data);
+            var data = JSON.parse(evt.data);
+            widgetData.innerHTML = "From server: " + JSON.stringify(data);
+        }
+    }
+    document.getElementById("create").onclick = function(evt) {
+        var ws = new WebSocket("ws://localhost:9000/ws?api="+apiInput.value);
+        addWidget(ws)
+        return false;
+    };
+});
+</script>
+</head>
+<body>
+<table>
+<tr><td valign="top" width="50%">
+<p>Click "Create" to create a new connection to the server, 
+</p>
+<form>
+<input id="apiInput" type="text" value="weather">
+<button id="create">Create Widget</button>
+</form>
+</td><td valign="top" width="50%">
+<div id="output"></div>
+</td></tr></table>
+<div id="widgets"></div>
+</body>
+</html>
