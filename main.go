@@ -1,14 +1,9 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/pisign/pisign-backend/api/weather"
+	"github.com/pisign/pisign-backend/server"
 )
 
 func main() {
-	datachan := make(chan string)
-	go weather.API(datachan)
-	output := <-datachan
-	fmt.Println(output)
+	server.StartLocalServer(9000)
 }
