@@ -13,11 +13,11 @@ import (
 
 // Data is the function that gets called to get the data from the weather API
 // This should be the only function that gets called from an external service
-func (a *API) Data() string {
+func (a *API) Data() api.InternalAPI {
 	var openWeatherResponse OpenWeatherResponse
 	if a.APIKey == "" {
 		log.Println("no key found")
-		return ""
+		return nil
 	}
 
 	log.Println("Getting weather with args: ", a)
@@ -42,7 +42,8 @@ func (a *API) Data() string {
 	log.Printf("Weather returned: %+v", openWeatherResponse)
 	var internalWeatherResponse api.InternalAPI
 	internalWeatherResponse = openWeatherResponse.Transform()
-	return string(internalWeatherResponse.Serialize())
+	return internalWeatherResponse
+	//return string(internalWeatherResponse.Serialize())
 }
 
 // API yay
