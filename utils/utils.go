@@ -61,7 +61,7 @@ func StructPrint(v interface{}) {
 		fieldFmt += "    " + line + "\n"
 	}
 
-	log.Println("type " + t.Name() + " {\n" + fieldFmt + "}\n")
+	fmt.Println("type " + t.Name() + " {\n" + fieldFmt + "}\n")
 }
 
 // CreateDirectory checks if a directory exists and if not creates it

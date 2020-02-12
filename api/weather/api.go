@@ -8,19 +8,11 @@ import (
 	"time"
 
 	"github.com/pisign/pisign-backend/api"
+	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 )
 
-// Data is the function that gets called to get the data from the weather API
-// This should be the only function that gets called from an external service
-func (a *API) Data() api.InternalAPI {
-	var openWeatherResponse OpenWeatherResponse
-	if a.APIKey == "" {
-		log.Println("no key found")
-		return nil
-	}
-
-	log.Println("Getting weather with args: ", a)
+func (a *API) get() api.ExternalAPI {
 	apikey := a.APIKey
 	zipcode := a.Zip
 
@@ -36,21 +28,31 @@ func (a *API) Data() api.InternalAPI {
 
 	body := utils.ParseResponse(resp)
 
-	log.Println("Weather Response: ", string(body))
-
+	var openWeatherResponse OpenWeatherResponse
 	utils.ParseJSON(body, openWeatherResponse)
-	log.Printf("Weather returned: %+v", openWeatherResponse)
-	var internalWeatherResponse api.InternalAPI
-	internalWeatherResponse = openWeatherResponse.Transform()
-	return internalWeatherResponse
-	//return string(internalWeatherResponse.Serialize())
+	return &openWeatherResponse
+}
+
+func (a *API) data() api.InternalAPI {
+	if time.Now().Sub(a.LastCalled) < (time.Minute * 1) {
+		log.Print("using cached value")
+		return &a.CachedResponse
+	}
+
+	response := a.get().Transform()
+	a.CachedResponse = response.(types.WeatherResponse)
+	return response
+
 }
 
 // API yay
 type API struct {
 	api.BaseAPI
-	Zip    int
-	APIKey string
+	Zip        int
+	APIKey     string
+	LastCalled time.Time
+	// TODO get rid of the cached response on the API struct?
+	CachedResponse types.WeatherResponse
 }
 
 // NewAPI creates a new weather api for a client
@@ -84,7 +86,7 @@ func (a *API) Run(w api.Widget) {
 			return
 		default:
 			<-ticker.C
-			w.Send(a.Data())
+			w.Send(a.data())
 		}
 	}
 }

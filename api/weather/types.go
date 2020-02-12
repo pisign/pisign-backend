@@ -1,5 +1,10 @@
 package weather
 
+import (
+	"github.com/pisign/pisign-backend/api"
+	"github.com/pisign/pisign-backend/types"
+)
+
 // openweathermap.org response data types
 
 type coord struct {
@@ -60,4 +65,13 @@ type OpenWeatherResponse struct {
 	ID         float64
 	Name       string
 	COD        float64
+}
+
+// Transform turns the OpenWeatherResponse into a WeatherResponse
+func (o *OpenWeatherResponse) Transform() api.InternalAPI {
+	weatherResponse := types.WeatherResponse{
+		Name: o.Name,
+	}
+
+	return &weatherResponse
 }
