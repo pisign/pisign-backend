@@ -6,13 +6,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/types"
 )
 
 // API for clock
 type API struct {
-	api.BaseAPI
+	types.BaseAPI
 	Location string
 	Format   string
 }
@@ -51,7 +50,7 @@ func (a *API) Configure(body *json.RawMessage) {
 }
 
 // Run main entry point to clock API
-func (a *API) Run(w api.Widget) {
+func (a *API) Run() {
 	log.Println("Running CLOCK")
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
@@ -60,13 +59,13 @@ func (a *API) Run(w api.Widget) {
 	}()
 	for {
 		select {
-		case <-w.Close():
+		case <-a.Widget.Close():
 			return
 		default:
 			t := <-ticker.C
 			t = t.In(a.loc())
 			out := types.ClockOut{Time: t.String()}
-			w.Send(out)
+			a.Widget.Send(out)
 		}
 	}
 }

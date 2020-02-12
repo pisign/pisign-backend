@@ -4,9 +4,9 @@ package manager
 import (
 	"fmt"
 
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/api/clock"
 	"github.com/pisign/pisign-backend/api/weather"
+	"github.com/pisign/pisign-backend/types"
 )
 
 // InvalidAPIError error for missing API
@@ -15,7 +15,7 @@ type InvalidAPIError struct {
 }
 
 // NewAPI returns a new instance of a specific API based on the name
-func NewAPI(name string) (api.API, error) {
+func NewAPI(name string) (types.API, error) {
 	switch name {
 	case "weather":
 		return weather.NewAPI(), nil
