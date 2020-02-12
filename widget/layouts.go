@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/pisign/pisign-backend/utils"
 )
+
+const storageFolder string = "layouts"
 
 // Layout of multiple widgets
 // Each layout is stored serverside to be retrieved later by the client
@@ -15,7 +19,11 @@ type Layout struct {
 }
 
 func getFilename(name string) string {
-	return fmt.Sprintf("layouts/%s.json", name)
+	err := utils.CreateDirectory(storageFolder)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%s/%s.json", storageFolder, name)
 }
 
 // LoadLayout returns the stored layout of the given name
