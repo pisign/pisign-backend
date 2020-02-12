@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pisign/pisign-backend/api"
+	"github.com/pisign/pisign-backend/types"
 )
 
 // API for clock
@@ -36,10 +37,7 @@ func (a *API) loc() *time.Location {
 func (a *API) Configure(body *json.RawMessage) {
 	log.Println("Configuring CLOCK!")
 
-	var config struct {
-		Location string
-	}
-
+	var config types.ClockConfig
 	if err := json.Unmarshal(*body, &config); err == nil {
 		_, err = time.LoadLocation(config.Location)
 		if err != nil {
@@ -67,7 +65,8 @@ func (a *API) Run(w api.Widget) {
 		default:
 			t := <-ticker.C
 			t = t.In(a.loc())
-			w.Send(t)
+			out := types.ClockOut{Time: t.String()}
+			w.Send(out)
 		}
 	}
 }
