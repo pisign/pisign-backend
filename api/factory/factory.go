@@ -1,5 +1,5 @@
-// Package manager spins up new api instances to connect to client widgets based on name
-package manager
+// Package factory spins up new api instances to connect to client widgets based on name
+package factory
 
 import (
 	"fmt"

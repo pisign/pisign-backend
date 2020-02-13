@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/pisign/pisign-backend/api/factory"
 	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/api"
-	"github.com/pisign/pisign-backend/api/manager"
 )
 
 // Widget struct for a single frontend widget
@@ -24,7 +24,7 @@ type Widget struct {
 
 // Create creates a new widget, with a valid api attached
 func Create(apiName string, conn *websocket.Conn, pool *Pool) error {
-	a, err := manager.NewAPI(apiName)
+	a, err := factory.NewAPI(apiName)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()
@@ -118,7 +118,7 @@ func (w *Widget) UnmarshalJSON(body []byte) error {
 	log.Printf("fields: %v\n", fields)
 	log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
 
-	w.API, err = manager.NewAPI(APIFields.Name)
+	w.API, err = factory.NewAPI(APIFields.Name)
 	if err != nil {
 		log.Printf("Unknown API type: %s\n", APIFields.Name)
 		return err
