@@ -75,11 +75,16 @@ func CreateDirectory(dirName string) error {
 			return err
 		}
 		log.Printf("Created directory: '%s'\n", dirName)
+		return nil
+	}
+
+	if err != nil {
+		return err
 	}
 
 	if src.Mode().IsRegular() {
 		return fmt.Errorf("CreateDirectory: '%s' already exists as a file, not a directory", dirName)
-
 	}
+
 	return nil
 }

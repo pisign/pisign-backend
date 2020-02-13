@@ -13,5 +13,5 @@ func buildurl(zipcode int, apikey string) string {
 }
 
 func kelvinToF(k float64) float64 {
-	return (k-273.15)*(9/5) + 32
+	return (((k - 273.15) * 9) / 5) + 32
 }
