@@ -18,8 +18,8 @@ func (a *API) get() api.ExternalAPI {
 
 	if apikey == "" {
 		// TODO better error handling
-		fmt.Fprintf(os.Stderr, "No API key found for weather API")
-		panic("no api key found")
+		fmt.Fprintf(os.Stderr, "No API key found for weather API: %+v\n", a)
+		return nil
 	}
 	url := buildurl(zipcode, apikey)
 	resp := utils.GetAPIData(url)
@@ -37,7 +37,11 @@ func (a *API) data() api.InternalAPI {
 		return &a.CachedResponse
 	}
 
-	response := a.get().Transform()
+	d := a.get()
+	if d == nil {
+		return nil
+	}
+	response := d.Transform()
 	res := response.(*types.WeatherResponse)
 
 	if res.COD > 300 {
@@ -92,7 +96,9 @@ func (a *API) Run(w api.Widget) {
 			return
 		default:
 			<-ticker.C
-			w.Send(a.data())
+			if data := a.data(); data != nil {
+				w.Send(a.data())
+			}
 		}
 	}
 }
