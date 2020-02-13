@@ -13,10 +13,19 @@ import (
 	"github.com/pisign/pisign-backend/api/manager"
 )
 
+// Position for widget location
+type Position struct {
+	X int
+	Y int
+	W int
+	H int
+	I string
+}
+
 // Widget struct for a single frontend widget
 type Widget struct {
+	Position
 	API       api.API
-	Position  *json.RawMessage
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
 	CloseChan chan bool       `json:"-"`
@@ -59,8 +68,8 @@ func (w *Widget) Read() {
 		}
 		log.Printf("message: %v\n", p)
 		var message struct {
-			API      *json.RawMessage
-			Position *json.RawMessage
+			Position
+			API *json.RawMessage
 		}
 		utils.ParseJSON(p, &message)
 		if err != nil {
@@ -69,7 +78,11 @@ func (w *Widget) Read() {
 		}
 
 		w.API.Configure(message.API)
-		w.Position = message.Position
+		w.X = message.X
+		w.Y = message.Y
+		w.W = message.W
+		w.H = message.H
+		w.I = message.I
 
 		log.Printf("widget with new data: %+v\n", w)
 		w.Pool.save()
@@ -97,8 +110,8 @@ func (w *Widget) UnmarshalJSON(body []byte) error {
 	//TODO: find better way to Unmarshal widget
 	log.Printf("w.API: %v\n", w.API)
 	var fields struct {
-		API      *json.RawMessage
-		Position *json.RawMessage
+		Position
+		API *json.RawMessage
 	}
 	err := utils.ParseJSON(body, &fields)
 	if err != nil {
@@ -116,7 +129,6 @@ func (w *Widget) UnmarshalJSON(body []byte) error {
 		return err
 	}
 	log.Printf("fields: %v\n", fields)
-	log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
 
 	w.API, err = manager.NewAPI(APIFields.Name)
 	if err != nil {
