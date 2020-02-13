@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -23,4 +24,17 @@ func Test_GetAPIData(t *testing.T) {
 	GetAPIData("bad url ?")
 	// this should trigger panic, which is caught by the defer. If that is not called,
 	// then test should fail!
+}
+
+func Test_CreateDirectory(t *testing.T) {
+	fakedir := "./fake"
+	if CreateDirectory(fakedir) != nil {
+		t.Error("error creating fake directory")
+	}
+
+	if CreateDirectory(fakedir) != nil {
+		t.Error("error when processing existing directory")
+	}
+
+	os.Remove(fakedir)
 }
