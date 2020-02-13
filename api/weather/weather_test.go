@@ -4,8 +4,24 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 )
+
+func Test_buildurl(t *testing.T) {
+	url := buildurl(90000, "API_KEY")
+	if url != "https://api.openweathermap.org/data/2.5/weather?zip=90000,us&APPID=API_KEY" {
+		t.Error("Generated URL is not correct: " + url)
+	}
+}
+
+func Test_kelvinToF(t *testing.T) {
+	if (kelvinToF(0) - -459.67) > 1 || (kelvinToF(0) - -459.67) < -1 {
+		t.Error("conversion error")
+		t.Error(kelvinToF(0))
+		t.Error(-459.67)
+	}
+}
 
 func Test_parseJSON(t *testing.T) {
 	JSONdata := []byte("{\"coord\":{\"lon\":-122.3,\"lat\":47.66},\"weather\":[{\"id\":501,\"main\":\"Rain\",\"description\":\"moderate rain\",\"icon\":\"10n\"},{\"id\":701,\"main\":\"Mist\",\"description\":\"mist\",\"icon\":\"50n\"}],\"base\":\"stations\",\"main\":{\"temp\":281.71,\"feels_like\":280.02,\"temp_min\":279.26,\"temp_max\":283.71,\"pressure\":1017,\"humidity\":100},\"visibility\":6437,\"wind\":{\"speed\":1.94,\"deg\":207},\"rain\":{\"1h\":1.43},\"clouds\":{\"all\":90},\"dt\":1580953406,\"sys\":{\"type\":1,\"id\":2674,\"country\":\"US\",\"sunrise\":1580916664,\"sunset\":1580951718},\"timezone\":-28800,\"id\":0,\"name\":\"Seattle\",\"cod\":200}")
@@ -69,5 +85,24 @@ func Test_parseJSON(t *testing.T) {
 		t.Error("Error in parsed json! Does not match excpected struct")
 		t.Error(parsedJSON)
 		t.Error(exampledata)
+	}
+}
+
+func Test_Transform(t *testing.T) {
+	name := "Name"
+	openWeatherResponse := OpenWeatherResponse{
+		Name: name,
+		Main: main{
+			Temp: 800,
+		},
+	}
+
+	resp := openWeatherResponse.Transform()
+	weatherResponse := resp.(*types.WeatherResponse)
+
+	if weatherResponse.Name != name || weatherResponse.Main.Temp < 0 {
+		t.Error("transformation error")
+		t.Error(openWeatherResponse)
+		t.Error(weatherResponse)
 	}
 }
