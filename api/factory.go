@@ -23,7 +23,7 @@ func NewAPI(name string, configChan chan *json.RawMessage) (types.API, error) {
 	case "clock":
 		return clock.NewAPI(configChan), nil
 	default:
-		return nil, InvalidAPIError{name}
+		return nil, &InvalidAPIError{name}
 	}
 }
 

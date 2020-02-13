@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+
 	"github.com/pisign/pisign-backend/utils"
 )
 
@@ -24,6 +25,8 @@ type API interface {
 
 	// Data gets the data to send
 	Data() interface{}
+
+	GetName() string
 }
 
 // Socket interface, needed to avoid circular dependency with Socket package
@@ -46,9 +49,15 @@ type BaseAPI struct {
 	ConfigChan chan *json.RawMessage `json:"-"`
 }
 
-func (b * BaseAPI) ConfigurePosition(body *json.RawMessage) {
+// ConfigurePosition configures positions
+func (b *BaseAPI) ConfigurePosition(body *json.RawMessage) {
 	err := utils.ParseJSON(*body, &b.Position)
 	if err != nil {
 		panic("OH NO")
 	}
+}
+
+// GetName returns name
+func (b *BaseAPI) GetName() string {
+	return b.Name
 }
