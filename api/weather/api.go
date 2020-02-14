@@ -2,52 +2,37 @@ package weather
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/pisign/pisign-backend/types"
-	"github.com/pisign/pisign-backend/utils"
 )
 
 func (a *API) get() types.ExternalAPI {
 	apikey := a.APIKey
 	zipcode := a.Zip
 
-	if apikey == "" {
-		// TODO better error handling
-		fmt.Fprintf(os.Stderr, "No API key found for weather API")
-		panic("no api key found")
-	}
-	url := buildurl(zipcode, apikey)
-	resp := utils.GetAPIData(url)
-	defer resp.Body.Close()
-
-	body := utils.ParseResponse(resp)
-	var openWeatherResponse OpenWeatherResponse
-	utils.ParseJSON(body, &openWeatherResponse)
-	return &openWeatherResponse
+// APISettings are the config settings for the API
+type APISettings struct {
+	Zip    int
+	APIKey string
 }
 
-func (a *API) data() types.InternalAPI {
+// Data gets the data to send to the websocket
+func (a *API) Data() interface{} {
+	// Data should handle how to retrieve the data
 	if time.Now().Sub(a.LastCalled) < (time.Second * 10) {
+		// Send the old response object
 		log.Println("using cached value")
-		return &a.CachedResponse
+		return &a.ResponseObject
 	}
 
-	response := a.get().Transform()
-	res := response.(*types.WeatherResponse)
-
-	if res.COD > 300 {
-		log.Println("API error")
-		log.Println(res)
-	} else {
-		a.LastCalled = time.Now()
-		a.CachedResponse = *res
-	}
-
-	return res
+	// Otherwise, update the response object
+	a.DataObject.Update(a.APISettings)
+	response := a.DataObject.Transform()
+	a.ResponseObject = *(response.(*types.WeatherResponse))
+	a.LastCalled = time.Now()
+	return &a.ResponseObject
 }
 
 // API yay
@@ -70,7 +55,7 @@ func NewAPI() *API {
 // Configure for weather
 func (a *API) Configure(body *json.RawMessage) {
 	log.Println("Configuring WEATHER!")
-	err := json.Unmarshal(*body, a)
+	err := json.Unmarshal(*body, &a.APISettings)
 	if err != nil {
 		log.Println("Error configuring weather api:", err)
 		return

@@ -14,6 +14,7 @@ type API struct {
 	types.BaseAPI
 	Location string
 	Format   string
+	Time     time.Time
 }
 
 // NewAPI creates a new clock api
@@ -47,6 +48,11 @@ func (a *API) Configure(body *json.RawMessage) {
 		log.Println("Clock configuration successful!", "a = ", a)
 	}
 
+}
+
+// Data gets the current time!
+func (a *API) Data() interface{} {
+	return types.ClockOut{Time: a.Time.In(a.loc()).String()}
 }
 
 // Run main entry point to clock API
