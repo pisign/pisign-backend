@@ -2,41 +2,46 @@ package types
 
 import "encoding/json"
 
+// DataObject holds the data from the external API
+type DataObject interface {
+	// Build builds the data object
+	Update(interface{})
+
+	// Transform turns the data object into a front-end parsable object
+	Transform() interface{}
+}
+
 // API is the entrance point of all apis to connect to a client
 type API interface {
 	// Configure settings from raw json message
 	Configure(body *json.RawMessage)
 
 	// Main loop that faciliates interaction between outside world and the client widet
-	Run()
+	Run(w Socket)
 
-	SetWidget(w Widget)
+	// Data gets the data to send
+	Data() interface{}
 }
 
-// InternalAPI is the interface our internal API uses
-type InternalAPI interface {
-	// Cache caches the internal API data
-	Cache()
-}
+// Socket interface, needed to avoid circular dependency with Socket package
+// TODO: See if we can remove this interface without adding a circular dependency?
+type Socket interface {
+	json.Unmarshaler
 
-// ExternalAPI is the interface for all our APIs
-type ExternalAPI interface {
-	// Transform turns the ExternalAPI response into an InternalAPI response
-	Transform() InternalAPI
+	// Read information from the client
+	Read()
+
+	// Send information to the client
+	Send(interface{})
+	Close() chan bool
 }
 
 // BaseAPI base for all APIs
 type BaseAPI struct {
 	APIName string `json:"Name"`
-	Widget  Widget `json:"-"`
 }
 
 // Name gets name of the api
 func (a *BaseAPI) Name() string {
 	return a.APIName
-}
-
-// SetWidget sets the widget for the api
-func (a *BaseAPI) SetWidget(w Widget) {
-	a.Widget = w
 }

@@ -2,62 +2,44 @@ package weather
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/pisign/pisign-backend/types"
-	"github.com/pisign/pisign-backend/utils"
 )
 
-func (a *API) get() types.ExternalAPI {
-	apikey := a.APIKey
-	zipcode := a.Zip
-
-	if apikey == "" {
-		// TODO better error handling
-		fmt.Fprintf(os.Stderr, "No API key found for weather API")
-		panic("no api key found")
-	}
-	url := buildurl(zipcode, apikey)
-	resp := utils.GetAPIData(url)
-	defer resp.Body.Close()
-
-	body := utils.ParseResponse(resp)
-	var openWeatherResponse OpenWeatherResponse
-	utils.ParseJSON(body, &openWeatherResponse)
-	return &openWeatherResponse
-}
-
-func (a *API) data() types.InternalAPI {
-	if time.Now().Sub(a.LastCalled) < (time.Second * 10) {
-		log.Println("using cached value")
-		return &a.CachedResponse
-	}
-
-	response := a.get().Transform()
-	res := response.(*types.WeatherResponse)
-
-	if res.COD > 300 {
-		log.Println("API error")
-		log.Println(res)
-	} else {
-		a.LastCalled = time.Now()
-		a.CachedResponse = *res
-	}
-
-	return res
-}
-
-// API yay
+// API for weather
 type API struct {
 	types.BaseAPI
-	Zip        int
-	APIKey     string
-	LastCalled time.Time
-	// TODO get rid of the cached response on the API struct?
-	CachedResponse types.WeatherResponse
+	APISettings APISettings
+	LastCalled  time.Time
+	// This is the object we get from the backend API - we could possible remove this and just have the ResponseObject
+	DataObject OpenWeatherResponse
+	// This is the object we are passing to the frontend - only need to rebuild it when its stale
+	ResponseObject types.WeatherResponse
+}
+
+// APISettings are the config settings for the API
+type APISettings struct {
+	Zip    int
+	APIKey string
+}
+
+// Data gets the data to send to the websocket
+func (a *API) Data() interface{} {
+	// Data should handle how to retrieve the data
+	if time.Now().Sub(a.LastCalled) < (time.Second * 10) {
+		// Send the old response object
+		log.Println("using cached value")
+		return &a.ResponseObject
+	}
+
+	// Otherwise, update the response object
+	a.DataObject.Update(a.APISettings)
+	response := a.DataObject.Transform()
+	a.ResponseObject = *(response.(*types.WeatherResponse))
+	a.LastCalled = time.Now()
+	return &a.ResponseObject
 }
 
 // NewAPI creates a new weather api for a client
@@ -70,7 +52,7 @@ func NewAPI() *API {
 // Configure for weather
 func (a *API) Configure(body *json.RawMessage) {
 	log.Println("Configuring WEATHER!")
-	err := json.Unmarshal(*body, a)
+	err := json.Unmarshal(*body, &a.APISettings)
 	if err != nil {
 		log.Println("Error configuring weather api:", err)
 		return
@@ -78,7 +60,7 @@ func (a *API) Configure(body *json.RawMessage) {
 }
 
 // Run main entry point to weather API
-func (a *API) Run() {
+func (a *API) Run(w api.Socket) {
 	log.Println("Running WEATHER")
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
@@ -87,11 +69,11 @@ func (a *API) Run() {
 	}()
 	for {
 		select {
-		case <-a.Widget.Close():
+		case <-w.Close():
 			return
 		default:
 			<-ticker.C
-			a.Widget.Send(a.data())
+			w.Send(a.Data())
 		}
 	}
 }
