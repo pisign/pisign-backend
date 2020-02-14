@@ -1,4 +1,4 @@
-package widget
+package socket
 
 import (
 	"encoding/json"
@@ -11,11 +11,11 @@ import (
 
 const storageFolder string = "layouts"
 
-// Layout of multiple widgets
+// Layout of multiple Sockets
 // Each layout is stored serverside to be retrieved later by the client
 type Layout struct {
 	Name    string
-	Widgets []*Widget
+	Sockets []*Socket
 }
 
 func getFilename(name string) string {

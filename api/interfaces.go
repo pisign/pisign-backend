@@ -2,16 +2,13 @@ package api
 
 import "encoding/json"
 
-// InternalAPI is the interface our internal API uses
-type InternalAPI interface {
-	// Cache caches the internal API data
-	Cache()
-}
+// DataObject holds the data from the external API
+type DataObject interface {
+	// Build builds the data object
+	Update(interface{})
 
-// ExternalAPI is the interface for all our APIs
-type ExternalAPI interface {
-	// Transform turns the ExternalAPI response into an InternalAPI response
-	Transform() InternalAPI
+	// Transform turns the data object into a front-end parsable object
+	Transform() interface{}
 }
 
 // API is the entrance point of all apis to connect to a client
@@ -20,12 +17,15 @@ type API interface {
 	Configure(body *json.RawMessage)
 
 	// Main loop that faciliates interaction between outside world and the client widet
-	Run(w Widget)
+	Run(w Socket)
+
+	// Data gets the data to send
+	Data() interface{}
 }
 
-// Widget interface, needed to avoid circular dependency with widget package
+// Socket interface, needed to avoid circular dependency with Socket package
 // TODO: See if we can remove this interface without adding a circular dependency?
-type Widget interface {
+type Socket interface {
 	json.Unmarshaler
 
 	// Read information from the client

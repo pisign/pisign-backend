@@ -15,6 +15,7 @@ type API struct {
 	api.BaseAPI
 	Location string
 	Format   string
+	Time     time.Time
 }
 
 // NewAPI creates a new clock api
@@ -50,8 +51,13 @@ func (a *API) Configure(body *json.RawMessage) {
 
 }
 
+// Data gets the current time!
+func (a *API) Data() interface{} {
+	return types.ClockOut{Time: a.Time.In(a.loc()).String()}
+}
+
 // Run main entry point to clock API
-func (a *API) Run(w api.Widget) {
+func (a *API) Run(w api.Socket) {
 	log.Println("Running CLOCK")
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
@@ -64,9 +70,8 @@ func (a *API) Run(w api.Widget) {
 			return
 		default:
 			t := <-ticker.C
-			t = t.In(a.loc())
-			out := types.ClockOut{Time: t.String()}
-			w.Send(out)
+			a.Time = t
+			w.Send(a.Data())
 		}
 	}
 }

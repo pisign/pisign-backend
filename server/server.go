@@ -10,11 +10,12 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/pisign/pisign-backend/widget"
+	"github.com/pisign/pisign-backend/api/manager"
+	"github.com/pisign/pisign-backend/socket"
 )
 
-func serveWs(pool *widget.Pool, w http.ResponseWriter, r *http.Request) {
-	log.Println("Websocket endpoing hit!")
+func socketConnectionHandler(pool *socket.Pool, w http.ResponseWriter, r *http.Request) {
+	log.Println("Websocket endpoint hit!")
 	conn, err := upgrade(w, r)
 	if err != nil {
 		fmt.Fprintf(w, "%+v\n", err)
@@ -22,7 +23,20 @@ func serveWs(pool *widget.Pool, w http.ResponseWriter, r *http.Request) {
 
 	apiName := r.FormValue("api")
 
-	widget.Create(apiName, conn, pool)
+	a, err := manager.NewAPI(apiName)
+	if err != nil {
+		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+		conn.Close()
+		return
+	}
+
+	socket := socket.Create(a, conn, pool)
+
+	// Socket connection handler should be the one to register, call the read method,
+	// and have the api run the socket
+	pool.Register <- socket
+	go socket.Read()
+	go a.Run(socket)
 }
 
 func serveLayouts(w http.ResponseWriter, r *http.Request) {
@@ -37,17 +51,17 @@ func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Printf("Retrieving layout data for %s...\n", layoutName)
-		fmt.Fprintf(w, "%+v", widget.LoadLayout(layoutName))
+		fmt.Fprintf(w, "%+v", socket.LoadLayout(layoutName))
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
 func setupRoutes() {
-	pool := widget.NewPool()
+	pool := socket.NewPool()
 	go pool.Start()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(pool, w, r)
+		socketConnectionHandler(pool, w, r)
 	})
 	http.HandleFunc("/layouts", serveLayouts)
 }
@@ -66,6 +80,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
+// Upgrades the HTTPS protocol to socket protocol
 func upgrade(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
