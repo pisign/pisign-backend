@@ -22,6 +22,7 @@ func NewPool() *Pool {
 	}
 }
 
+// SocketList list of sockets
 func (pool *Pool) SocketList() []*Socket {
 	keys := make([]*Socket, len(pool.Sockets))
 	i := 0

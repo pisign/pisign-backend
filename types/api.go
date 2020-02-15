@@ -9,8 +9,7 @@ type API interface {
 
 	// Main loop that faciliates interaction between outside world and the client widet
 	Run()
-
-	SetWidget(w Widget)
+	SetThings(func(interface{}), chan bool)
 }
 
 // InternalAPI is the interface our internal API uses
@@ -27,8 +26,9 @@ type ExternalAPI interface {
 
 // BaseAPI base for all APIs
 type BaseAPI struct {
-	APIName string `json:"Name"`
-	Widget  Widget `json:"-"`
+	APIName string            `json:"Name"`
+	Send    func(interface{}) `json:"-"`
+	Close   chan bool         `json:"-"`
 }
 
 // Name gets name of the api
@@ -36,7 +36,8 @@ func (a *BaseAPI) Name() string {
 	return a.APIName
 }
 
-// SetWidget sets the widget for the api
-func (a *BaseAPI) SetWidget(w Widget) {
-	a.Widget = w
+// SetThings sets the function to send data to client
+func (a *BaseAPI) SetThings(send func(interface{}), close chan bool) {
+	a.Send = send
+	a.Close = close
 }

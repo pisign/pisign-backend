@@ -65,13 +65,13 @@ func (a *API) Run() {
 	}()
 	for {
 		select {
-		case <-a.Widget.Close():
+		case <-a.Close:
 			return
 		default:
 			t := <-ticker.C
 			t = t.In(a.loc())
 			out := types.ClockOut{Time: t.String()}
-			a.Widget.Send(out)
+			a.Send(out)
 		}
 	}
 }

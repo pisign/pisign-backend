@@ -8,10 +8,6 @@ import (
 	"github.com/pisign/pisign-backend/types"
 )
 
-func (a *API) get() types.ExternalAPI {
-	apikey := a.APIKey
-	zipcode := a.Zip
-
 // APISettings are the config settings for the API
 type APISettings struct {
 	Zip    int
@@ -38,11 +34,12 @@ func (a *API) Data() interface{} {
 // API yay
 type API struct {
 	types.BaseAPI
-	Zip        int
-	APIKey     string
-	LastCalled time.Time
-	// TODO get rid of the cached response on the API struct?
-	CachedResponse types.WeatherResponse
+	APISettings APISettings
+	LastCalled  time.Time
+	// This is the object we get from the backend API - we could possible remove this and just have the ResponseObject
+	DataObject OpenWeatherResponse
+	// This is the object we are passing to the frontend - only need to rebuild it when its stale
+	ResponseObject types.WeatherResponse
 }
 
 // NewAPI creates a new weather api for a client
@@ -72,11 +69,10 @@ func (a *API) Run() {
 	}()
 	for {
 		select {
-		case <-a.Widget.Close():
+		case <-a.Close:
 			return
-		default:
-			<-ticker.C
-			a.Widget.Send(a.data())
+		case <-ticker.C:
+			a.Send(a.Data())
 		}
 	}
 }

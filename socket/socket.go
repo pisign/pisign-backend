@@ -6,16 +6,16 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/gorilla/websocket"
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/api/manager"
 )
 
 // Socket struct for a single frontend Socket
 type Socket struct {
-	API       api.API
+	API       types.API
 	Position  *json.RawMessage
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
@@ -23,7 +23,7 @@ type Socket struct {
 }
 
 // Create creates a new Socket, with a valid api attached
-func Create(a api.API, conn *websocket.Conn, pool *Pool) *Socket {
+func Create(a types.API, conn *websocket.Conn, pool *Pool) *Socket {
 	socket := &Socket{
 		API:       a,
 		Conn:      conn,

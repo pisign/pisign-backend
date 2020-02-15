@@ -32,12 +32,13 @@ func socketConnectionHandler(pool *socket.Pool, w http.ResponseWriter, r *http.R
 	}
 
 	socket := socket.Create(a, conn, pool)
+	a.SetThings(func(body interface{}) { socket.Send(body) }, socket.CloseChan)
 
 	// Socket connection handler should be the one to register, call the read method,
 	// and have the api run the socket
 	pool.Register <- socket
 	go socket.Read()
-	go a.Run(socket)
+	go a.Run()
 }
 
 func serveLayouts(w http.ResponseWriter, r *http.Request) {
