@@ -3,6 +3,7 @@ package socket
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -38,12 +39,14 @@ func LoadLayout(name string) Layout {
 	defer dataFile.Close()
 
 	var layout Layout
-	dataDecoder := json.NewDecoder(dataFile)
-	err = dataDecoder.Decode(&layout)
-	if err != nil {
-		log.Printf("Error Decoding layout %s: %v\n", name, err)
-		return Layout{}
-	}
+	data, _ := ioutil.ReadFile(name)
+	// dataDecoder := json.NewDecoder()
+	json.Unmarshal(data, &layout)
+	// err = dataDecoder.Decode(&layout)
+	// if err != nil {
+	// 	log.Printf("Error Decoding layout %s: %v\n", name, err)
+	// 	return Layout{}
+	// }
 	if layout.Name != name {
 		log.Printf("Layout name requested (%s) and retrieved from file (%s) do not match!\n", name, layout.Name)
 		return Layout{}

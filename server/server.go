@@ -5,6 +5,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -42,6 +43,7 @@ func socketConnectionHandler(pool *socket.Pool, w http.ResponseWriter, r *http.R
 func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Layouts endpoing hit!")
 	layoutName := r.FormValue("name")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if layoutName == "" {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		fmt.Fprintln(w, "Must supply `name` parameter")
@@ -51,7 +53,8 @@ func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Printf("Retrieving layout data for %s...\n", layoutName)
-		fmt.Fprintf(w, "%+v", socket.LoadLayout(layoutName))
+		v, _ := json.Marshal(layoutName)
+		fmt.Fprintf(w, "%s", string(v))
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -68,7 +71,7 @@ func setupRoutes() {
 
 // StartLocalServer creates a new server on localhost
 func StartLocalServer(port int) {
-	addr := fmt.Sprintf("localhost:%v", port)
+	addr := fmt.Sprintf("0.0.0.0:%v", port)
 	log.Printf("Running server at %v\n", addr)
 	setupRoutes()
 	http.ListenAndServe(addr, nil)
