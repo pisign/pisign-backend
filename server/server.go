@@ -7,11 +7,11 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pisign/pisign-backend/api"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/pisign/pisign-backend/api/manager"
 	"github.com/pisign/pisign-backend/socket"
 )
 
@@ -22,16 +22,18 @@ func socketConnectionHandler(pool *socket.Pool, w http.ResponseWriter, r *http.R
 		fmt.Fprintf(w, "%+v\n", err)
 	}
 
+	configChannel := make(chan *json.RawMessage)
+
 	apiName := r.FormValue("api")
 
-	a, err := manager.NewAPI(apiName)
+	a, err := api.NewAPI(apiName, configChannel)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()
 		return
 	}
 
-	socket := socket.Create(a, conn, pool)
+	socket := socket.Create(configChannel, conn, pool)
 
 	// Socket connection handler should be the one to register, call the read method,
 	// and have the api run the socket

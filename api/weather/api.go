@@ -43,14 +43,16 @@ func (a *API) Data() interface{} {
 }
 
 // NewAPI creates a new weather api for a client
-func NewAPI() *API {
+func NewAPI(configChan chan *json.RawMessage) *API {
 	a := new(API)
-	a.APIName = "weather"
+	a.Name = "weather"
+	a.ConfigChan = configChan
 	return a
 }
 
 // Configure for weather
 func (a *API) Configure(body *json.RawMessage) {
+	a.ConfigurePosition(body)
 	log.Println("Configuring WEATHER!")
 	err := json.Unmarshal(*body, &a.APISettings)
 	if err != nil {
@@ -60,7 +62,7 @@ func (a *API) Configure(body *json.RawMessage) {
 }
 
 // Run main entry point to weather API
-func (a *API) Run(w api.Socket) {
+func (a *API) Run(w types.Socket) {
 	log.Println("Running WEATHER")
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
@@ -69,6 +71,8 @@ func (a *API) Run(w api.Socket) {
 	}()
 	for {
 		select {
+		case  data:= <- a.ConfigChan:
+			a.Configure(data)
 		case <-w.Close():
 			return
 		default:

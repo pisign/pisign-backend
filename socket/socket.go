@@ -6,30 +6,28 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/api"
-	"github.com/pisign/pisign-backend/api/manager"
 )
 
 // Socket struct for a single frontend Socket
 type Socket struct {
-	API       types.API
 	Position  *json.RawMessage
 	Conn      *websocket.Conn `json:"-"`
 	Pool      *Pool           `json:"-"`
 	CloseChan chan bool       `json:"-"`
+	ConfigChan  chan *json.RawMessage `json:"-"`
 }
 
 // Create creates a new Socket, with a valid api attached
-func Create(a api.API, conn *websocket.Conn, pool *Pool) *Socket {
+func Create(configChan chan *json.RawMessage, conn *websocket.Conn, pool *Pool) *Socket {
 	socket := &Socket{
-		API:       a,
 		Conn:      conn,
 		Pool:      pool,
 		CloseChan: make(chan bool),
+		ConfigChan: configChan,
 	}
 
 	return socket
@@ -60,7 +58,8 @@ func (w *Socket) Read() {
 			continue
 		}
 
-		w.API.Configure(message.API)
+		//w.API.Configure(message.API)
+		w.ConfigChan <- message.API
 		w.Position = message.Position
 
 		log.Printf("Socket with new data: %+v\n", w)
@@ -87,7 +86,7 @@ func (w *Socket) String() string {
 // Dynamically creates correct type of api for properly unmarshalling
 func (w *Socket) UnmarshalJSON(body []byte) error {
 	//TODO: find better way to Unmarshal Socket
-	log.Printf("w.API: %v\n", w.API)
+	//log.Printf("w.API: %v\n", w.API)
 	var fields struct {
 		API      *json.RawMessage
 		Position *json.RawMessage
@@ -107,15 +106,16 @@ func (w *Socket) UnmarshalJSON(body []byte) error {
 		log.Printf("Could not unmarshal Socket: no `API.Name` field present: %v\n", err)
 		return err
 	}
+	log.Printf("fields: %v\n", fields)
 	log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
 
-	w.API, err = manager.NewAPI(APIFields.Name)
+	newAPI, err := api.NewAPI(APIFields.Name, nil)
 	if err != nil {
 		log.Printf("Unknown API type: %s\n", APIFields.Name)
 		return err
 	}
 
-	utils.ParseJSON(*fields.API, w.API)
+	utils.ParseJSON(*fields.API, newAPI)
 	w.Position = fields.Position
 
 	return nil
