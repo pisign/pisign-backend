@@ -5,6 +5,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,6 +29,7 @@ func serveWs(pool *widget.Pool, w http.ResponseWriter, r *http.Request) {
 func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Layouts endpoing hit!")
 	layoutName := r.FormValue("name")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if layoutName == "" {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		fmt.Fprintln(w, "Must supply `name` parameter")
@@ -37,7 +39,8 @@ func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Printf("Retrieving layout data for %s...\n", layoutName)
-		fmt.Fprintf(w, "%+v", widget.LoadLayout(layoutName))
+		v, _ := json.Marshal(widget.LoadLayout(layoutName))
+		fmt.Fprintf(w, "%s", string(v))
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}

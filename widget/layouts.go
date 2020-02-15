@@ -3,6 +3,7 @@ package widget
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -29,21 +30,9 @@ func getFilename(name string) string {
 // LoadLayout returns the stored layout of the given name
 func LoadLayout(name string) Layout {
 	log.Printf("Loading layout %s\n", name)
-	dataFile, err := os.Open(getFilename(name))
-
-	if err != nil {
-		log.Printf("Error Opening file for layout %s: %v\n", name, err)
-		return Layout{}
-	}
-	defer dataFile.Close()
-
 	var layout Layout
-	dataDecoder := json.NewDecoder(dataFile)
-	err = dataDecoder.Decode(&layout)
-	if err != nil {
-		log.Printf("Error Decoding layout %s: %v\n", name, err)
-		return Layout{}
-	}
+	data, _ := ioutil.ReadFile(getFilename(name))
+	json.Unmarshal(data, &layout)
 	if layout.Name != name {
 		log.Printf("Layout name requested (%s) and retrieved from file (%s) do not match!\n", name, layout.Name)
 		return Layout{}
