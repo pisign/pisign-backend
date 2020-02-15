@@ -1,9 +1,10 @@
-// Package manager spins up new api instances to connect to client widgets based on name
+// Package api spins up new api instances to connect to client widgets based on name
 package api
 
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/pisign/pisign-backend/types"
 
 	"github.com/pisign/pisign-backend/api/clock"
