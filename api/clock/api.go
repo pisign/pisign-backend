@@ -6,7 +6,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -19,10 +18,11 @@ type API struct {
 }
 
 // NewAPI creates a new clock api
-func NewAPI() *API {
+func NewAPI(configChan chan *json.RawMessage) *API {
 	a := new(API)
-	a.APIName = "clock"
+	a.Name = "clock"
 	a.Location = "Local"
+	a.ConfigChan = configChan
 	return a
 }
 
@@ -36,6 +36,7 @@ func (a *API) loc() *time.Location {
 
 // Configure for clock
 func (a *API) Configure(body *json.RawMessage) {
+	a.ConfigurePosition(body)
 	log.Println("Configuring CLOCK!")
 
 	var config types.ClockConfig
@@ -57,7 +58,7 @@ func (a *API) Data() interface{} {
 }
 
 // Run main entry point to clock API
-func (a *API) Run(w api.Socket) {
+func (a *API) Run(w types.Socket) {
 	log.Println("Running CLOCK")
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {

@@ -1,6 +1,9 @@
 package types
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/pisign/pisign-backend/utils"
+)
 
 // DataObject holds the data from the external API
 type DataObject interface {
@@ -38,10 +41,14 @@ type Socket interface {
 
 // BaseAPI base for all APIs
 type BaseAPI struct {
-	APIName string `json:"Name"`
+	Position   Position
+	Name       string
+	ConfigChan chan *json.RawMessage `json:"-"`
 }
 
-// Name gets name of the api
-func (a *BaseAPI) Name() string {
-	return a.APIName
+func (b * BaseAPI) ConfigurePosition(body *json.RawMessage) {
+	err := utils.ParseJSON(*body, &b.Position)
+	if err != nil {
+		panic("OH NO")
+	}
 }

@@ -79,7 +79,8 @@ func (o *OpenWeatherResponse) Update(arguments interface{}) {
 	if apikey == "" {
 		// TODO better error handling
 		fmt.Fprintf(os.Stderr, "No API key found for weather API")
-		panic("no api key found")
+		//panic("no api key found")
+		return
 	}
 
 	url := buildurl(zipcode, apikey)

@@ -1,12 +1,13 @@
 // Package manager spins up new api instances to connect to client widgets based on name
-package manager
+package api
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/pisign/pisign-backend/types"
 
 	"github.com/pisign/pisign-backend/api/clock"
 	"github.com/pisign/pisign-backend/api/weather"
-	"github.com/pisign/pisign-backend/types"
 )
 
 // InvalidAPIError error for missing API
@@ -15,12 +16,12 @@ type InvalidAPIError struct {
 }
 
 // NewAPI returns a new instance of a specific API based on the name
-func NewAPI(name string) (types.API, error) {
+func NewAPI(name string, configChan chan *json.RawMessage) (types.API, error) {
 	switch name {
 	case "weather":
-		return weather.NewAPI(), nil
+		return weather.NewAPI(configChan), nil
 	case "clock":
-		return clock.NewAPI(), nil
+		return clock.NewAPI(configChan), nil
 	default:
 		return nil, InvalidAPIError{name}
 	}
