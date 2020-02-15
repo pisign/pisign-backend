@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/gorilla/websocket"
-	"github.com/pisign/pisign-backend/api/manager"
 )
 
 // Socket struct for a single frontend Socket
@@ -109,7 +109,7 @@ func (w *Socket) UnmarshalJSON(body []byte) error {
 	log.Printf("fields: %v\n", fields)
 	log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
 
-	w.API, err = manager.NewAPI(APIFields.Name)
+	w.API, err = api.NewAPI(APIFields.Name)
 	if err != nil {
 		log.Printf("Unknown API type: %s\n", APIFields.Name)
 		return err

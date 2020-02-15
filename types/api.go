@@ -9,7 +9,9 @@ type API interface {
 
 	// Main loop that faciliates interaction between outside world and the client widet
 	Run()
-	SetThings(func(interface{}), chan bool)
+
+	// Sets values needed to communicate with client and shut down api
+	SetThings(send func(interface{}), close chan bool)
 }
 
 // InternalAPI is the interface our internal API uses
@@ -29,11 +31,6 @@ type BaseAPI struct {
 	APIName string            `json:"Name"`
 	Send    func(interface{}) `json:"-"`
 	Close   chan bool         `json:"-"`
-}
-
-// Name gets name of the api
-func (a *BaseAPI) Name() string {
-	return a.APIName
 }
 
 // SetThings sets the function to send data to client

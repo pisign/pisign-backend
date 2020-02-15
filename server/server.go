@@ -11,7 +11,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/pisign/pisign-backend/api/manager"
+	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/socket"
 )
 
@@ -24,7 +24,7 @@ func socketConnectionHandler(pool *socket.Pool, w http.ResponseWriter, r *http.R
 
 	apiName := r.FormValue("api")
 
-	a, err := manager.NewAPI(apiName)
+	a, err := api.NewAPI(apiName)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()
