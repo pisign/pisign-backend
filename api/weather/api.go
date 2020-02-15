@@ -43,10 +43,10 @@ func (a *API) Data() interface{} {
 }
 
 // NewAPI creates a new weather api for a client
-func NewAPI(configChan chan *json.RawMessage) *API {
+func NewAPI(configChan chan *json.RawMessage, pool types.Pool) *API {
 	a := new(API)
-	a.Name = "weather"
-	a.ConfigChan = configChan
+	a.BaseAPI.Init("weather", configChan, pool)
+	a.Pool.Register(a)
 	return a
 }
 
@@ -68,10 +68,11 @@ func (a *API) Run(w types.Socket) {
 	defer func() {
 		ticker.Stop()
 		log.Println("STOPPING WEATHER")
+		a.Pool.Unregister(a)
 	}()
 	for {
 		select {
-		case  data:= <- a.ConfigChan:
+		case data := <-a.ConfigChan:
 			a.Configure(data)
 		case <-w.Close():
 			return

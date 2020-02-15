@@ -9,24 +9,20 @@ import (
 	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/gorilla/websocket"
-	"github.com/pisign/pisign-backend/api"
 )
 
 // Socket struct for a single frontend Socket
 type Socket struct {
-	Position  *json.RawMessage
-	Conn      *websocket.Conn `json:"-"`
-	Pool      *Pool           `json:"-"`
-	CloseChan chan bool       `json:"-"`
-	ConfigChan  chan *json.RawMessage `json:"-"`
+	Conn       *websocket.Conn       `json:"-"`
+	CloseChan  chan bool             `json:"-"`
+	ConfigChan chan *json.RawMessage `json:"-"`
 }
 
 // Create creates a new Socket, with a valid api attached
-func Create(configChan chan *json.RawMessage, conn *websocket.Conn, pool *Pool) *Socket {
+func Create(configChan chan *json.RawMessage, conn *websocket.Conn) *Socket {
 	socket := &Socket{
-		Conn:      conn,
-		Pool:      pool,
-		CloseChan: make(chan bool),
+		Conn:       conn,
+		CloseChan:  make(chan bool),
 		ConfigChan: configChan,
 	}
 
@@ -36,7 +32,6 @@ func Create(configChan chan *json.RawMessage, conn *websocket.Conn, pool *Pool) 
 func (w *Socket) Read() {
 	// The only time the socket is recieving data is when it is getting configutation data
 	defer func() {
-		w.Pool.Unregister <- w
 		w.CloseChan <- true
 		w.Conn.Close()
 	}()
@@ -58,12 +53,9 @@ func (w *Socket) Read() {
 			continue
 		}
 
-		//w.API.Configure(message.API)
 		w.ConfigChan <- message.API
-		w.Position = message.Position
 
 		log.Printf("Socket with new data: %+v\n", w)
-		w.Pool.save()
 	}
 }
 
@@ -87,36 +79,35 @@ func (w *Socket) String() string {
 func (w *Socket) UnmarshalJSON(body []byte) error {
 	//TODO: find better way to Unmarshal Socket
 	//log.Printf("w.API: %v\n", w.API)
-	var fields struct {
-		API      *json.RawMessage
-		Position *json.RawMessage
-	}
-	err := utils.ParseJSON(body, &fields)
-	if err != nil {
-		log.Println("Could not unmarshal Socket: ", err)
-		return err
-	}
+	// var fields struct {
+	// 	API      *json.RawMessage
+	// 	Position *json.RawMessage
+	// }
+	// err := utils.ParseJSON(body, &fields)
+	// if err != nil {
+	// 	log.Println("Could not unmarshal Socket: ", err)
+	// 	return err
+	// }
 
-	var APIFields struct {
-		Name string
-	}
+	// var APIFields struct {
+	// 	Name string
+	// }
 
-	err = utils.ParseJSON(*fields.API, &APIFields)
-	if err != nil {
-		log.Printf("Could not unmarshal Socket: no `API.Name` field present: %v\n", err)
-		return err
-	}
-	log.Printf("fields: %v\n", fields)
-	log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
+	// err = utils.ParseJSON(*fields.API, &APIFields)
+	// if err != nil {
+	// 	log.Printf("Could not unmarshal Socket: no `API.Name` field present: %v\n", err)
+	// 	return err
+	// }
+	// log.Printf("fields: %v\n", fields)
+	// log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
 
-	newAPI, err := api.NewAPI(APIFields.Name, nil)
-	if err != nil {
-		log.Printf("Unknown API type: %s\n", APIFields.Name)
-		return err
-	}
+	// newAPI, err := api.NewAPI(APIFields.Name, nil)
+	// if err != nil {
+	// 	log.Printf("Unknown API type: %s\n", APIFields.Name)
+	// 	return err
+	// }
 
-	utils.ParseJSON(*fields.API, newAPI)
-	w.Position = fields.Position
+	// utils.ParseJSON(*fields.API, newAPI)
 
 	return nil
 }

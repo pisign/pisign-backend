@@ -1,4 +1,4 @@
-package socket
+package api
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 )
 
@@ -14,8 +15,8 @@ const storageFolder string = "layouts"
 // Layout of multiple Sockets
 // Each layout is stored serverside to be retrieved later by the client
 type Layout struct {
-	Name    string
-	Sockets []*Socket
+	Name string
+	Map  []types.API
 }
 
 func getFilename(name string) string {

@@ -18,11 +18,11 @@ type API struct {
 }
 
 // NewAPI creates a new clock api
-func NewAPI(configChan chan *json.RawMessage) *API {
+func NewAPI(configChan chan *json.RawMessage, pool types.Pool) *API {
 	a := new(API)
-	a.Name = "clock"
+	a.BaseAPI.Init("clock", configChan, pool)
+	a.Pool.Register(a)
 	a.Location = "Local"
-	a.ConfigChan = configChan
 	return a
 }
 

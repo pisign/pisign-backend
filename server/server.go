@@ -7,15 +7,18 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pisign/pisign-backend/api"
 	"log"
 	"net/http"
+
+	"github.com/pisign/pisign-backend/api"
+	"github.com/pisign/pisign-backend/pool"
+	"github.com/pisign/pisign-backend/types"
 
 	"github.com/gorilla/websocket"
 	"github.com/pisign/pisign-backend/socket"
 )
 
-func socketConnectionHandler(pool *socket.Pool, w http.ResponseWriter, r *http.Request) {
+func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Request) {
 	log.Println("Websocket endpoint hit!")
 	conn, err := upgrade(w, r)
 	if err != nil {
@@ -26,18 +29,17 @@ func socketConnectionHandler(pool *socket.Pool, w http.ResponseWriter, r *http.R
 
 	apiName := r.FormValue("api")
 
-	a, err := api.NewAPI(apiName, configChannel)
+	a, err := api.NewAPI(apiName, configChannel, pool)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()
 		return
 	}
 
-	socket := socket.Create(configChannel, conn, pool)
+	socket := socket.Create(configChannel, conn)
 
 	// Socket connection handler should be the one to register, call the read method,
 	// and have the api run the socket
-	pool.Register <- socket
 	go socket.Read()
 	go a.Run(socket)
 }
@@ -55,17 +57,17 @@ func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Printf("Retrieving layout data for %s...\n", layoutName)
-		fmt.Fprintf(w, "%+v", socket.LoadLayout(layoutName))
+		fmt.Fprintf(w, "%+v", api.LoadLayout(layoutName))
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
 func setupRoutes() {
-	pool := socket.NewPool()
-	go pool.Start()
+	p := pool.NewPool()
+	go p.Start()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		socketConnectionHandler(pool, w, r)
+		socketConnectionHandler(p, w, r)
 	})
 	http.HandleFunc("/layouts", serveLayouts)
 }
