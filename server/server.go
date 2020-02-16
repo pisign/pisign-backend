@@ -25,7 +25,7 @@ func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Req
 		fmt.Fprintf(w, "%+v\n", err)
 	}
 
-	configChannel := make(chan *json.RawMessage)
+	configChannel := make(chan types.ConfigMessage)
 
 	apiName := r.FormValue("api")
 

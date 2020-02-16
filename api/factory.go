@@ -2,7 +2,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/pisign/pisign-backend/types"
@@ -17,7 +16,7 @@ type InvalidAPIError struct {
 }
 
 // NewAPI returns a new instance of a specific API based on the name
-func NewAPI(name string, configChan chan *json.RawMessage, pool types.Pool) (types.API, error) {
+func NewAPI(name string, configChan chan types.ConfigMessage, pool types.Pool) (types.API, error) {
 	switch name {
 	case "weather":
 		return weather.NewAPI(configChan, pool), nil

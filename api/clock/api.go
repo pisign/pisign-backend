@@ -4,7 +4,6 @@ package clock
 import (
 	"encoding/json"
 	"log"
-	"reflect"
 	"time"
 
 	"github.com/pisign/pisign-backend/types"
@@ -13,24 +12,23 @@ import (
 // API for clock
 type API struct {
 	types.BaseAPI
-	Location string    `json:"-"`
-	Time     time.Time `json:"-"`
+	Config types.ClockConfig
+	Time   time.Time `json:"-"`
 }
 
 // NewAPI creates a new clock api
-func NewAPI(configChan chan *json.RawMessage, pool types.Pool) *API {
+func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
 	a := new(API)
 	a.BaseAPI.Init("clock", configChan, pool)
 	if a.Pool != nil {
 		a.Pool.Register(a)
 	}
-
-	a.Location = "Local"
+	a.Config.Location = "Local"
 	return a
 }
 
 func (a *API) loc() *time.Location {
-	t, err := time.LoadLocation(a.Location)
+	t, err := time.LoadLocation(a.Config.Location)
 	if err != nil {
 		t, _ = time.LoadLocation("Local")
 	}
@@ -38,24 +36,17 @@ func (a *API) loc() *time.Location {
 }
 
 // Configure for clock
-func (a *API) Configure(body *json.RawMessage) {
-	a.ConfigurePosition(body)
+func (a *API) Configure(body types.ConfigMessage) {
+	a.ConfigurePosition(body.Position)
 	log.Println("Configuring CLOCK!")
+	log.Printf("Config: %+v\n", body)
 
-	var config types.ClockConfig
-	if err := json.Unmarshal(*body, &config); err == nil {
-		v := reflect.ValueOf(config)
-		t := v.Type()
-		for i := 0; i < v.NumField(); i++ {
-			log.Printf("Field: %v, value: %v\n", t.Field(i).Name, v.Field(i))
-		}
-		_, err = time.LoadLocation(config.Location)
+	if err := json.Unmarshal(body.Config, &a.Config); err == nil {
+		_, err = time.LoadLocation(a.Config.Location)
 		if err != nil {
-			log.Printf("Could not load timezone %s: %s", config.Location, err)
+			log.Printf("Could not load timezone %s: %s", a.Config.Location, err)
 			return
 		}
-		a.Location = config.Location
-		a.Config["Location"] = config.Location
 		log.Println("Clock configuration successful!", "a = ", a)
 	}
 	a.Pool.Save()
