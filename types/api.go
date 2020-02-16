@@ -10,6 +10,7 @@ import (
 type BaseAPI struct {
 	Position
 	Name       string
+	Config     map[string]interface{}
 	ConfigChan chan *json.RawMessage `json:"-"`
 	Pool       Pool                  `json:"-"`
 }
@@ -19,6 +20,7 @@ func (b *BaseAPI) Init(name string, configChan chan *json.RawMessage, pool Pool)
 	b.Name = name
 	b.ConfigChan = configChan
 	b.Pool = pool
+	b.Config = make(map[string]interface{})
 }
 
 // GetName returns the name (or type) of the api

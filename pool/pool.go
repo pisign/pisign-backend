@@ -35,10 +35,14 @@ func (pool *Pool) List() []types.API {
 	return keys
 }
 
-func (pool *Pool) save() error {
+// Save the current state of the pool
+func (pool *Pool) Save() {
 	list := pool.List()
 	layout := Layout{List: list, Name: pool.name}
-	return SaveLayout(layout)
+	err := SaveLayout(layout)
+	if err != nil {
+		panic("Error saving layout from pool!")
+	}
 }
 
 // Start main entry point of a pool
@@ -49,7 +53,7 @@ func (pool *Pool) Start() {
 			pool.Map[api] = true
 			log.Printf("New API: %s\n", api.GetName())
 			log.Println("Size of Connection Pool: ", len(pool.Map))
-			pool.save()
+			pool.Save()
 		case api := <-pool.unregisterChan:
 			delete(pool.Map, api)
 			log.Printf("Lost API: %s\n", api.GetName())
