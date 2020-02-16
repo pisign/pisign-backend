@@ -16,7 +16,7 @@ type DataObject interface {
 // API is the entrance point of all apis to connect to a client
 type API interface {
 	// Configure settings from raw json message
-	Configure(body *json.RawMessage)
+	Configure(message ConfigMessage)
 
 	// Main loop that faciliates interaction between outside world and the client widet
 	Run(w Socket)
@@ -46,4 +46,10 @@ type Pool interface {
 	Register(API)
 	Unregister(API)
 	Save()
+}
+
+// ConfigMessage for configuring
+type ConfigMessage struct {
+	Position
+	Config json.RawMessage
 }

@@ -1,26 +1,18 @@
 package types
 
-import (
-	"encoding/json"
-
-	"github.com/pisign/pisign-backend/utils"
-)
-
 // BaseAPI base for all APIs
 type BaseAPI struct {
 	Position
-	Name       string
-	Config     map[string]interface{}
-	ConfigChan chan *json.RawMessage `json:"-"`
-	Pool       Pool                  `json:"-"`
+	Name       string             `json:"name"`
+	ConfigChan chan ConfigMessage `json:"-"`
+	Pool       Pool               `json:"-"`
 }
 
 // Init Initialization
-func (b *BaseAPI) Init(name string, configChan chan *json.RawMessage, pool Pool) {
+func (b *BaseAPI) Init(name string, configChan chan ConfigMessage, pool Pool) {
 	b.Name = name
 	b.ConfigChan = configChan
 	b.Pool = pool
-	b.Config = make(map[string]interface{})
 }
 
 // GetName returns the name (or type) of the api
@@ -29,9 +21,6 @@ func (b *BaseAPI) GetName() string {
 }
 
 // ConfigurePosition configures position
-func (b *BaseAPI) ConfigurePosition(body *json.RawMessage) {
-	err := utils.ParseJSON(*body, &b.Position)
-	if err != nil {
-		panic("OH NO")
-	}
+func (b *BaseAPI) ConfigurePosition(pos Position) {
+	b.Position = pos
 }

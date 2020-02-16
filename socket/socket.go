@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/gorilla/websocket"
@@ -13,13 +14,13 @@ import (
 
 // Socket struct for a single frontend Socket
 type Socket struct {
-	Conn       *websocket.Conn       `json:"-"`
-	CloseChan  chan bool             `json:"-"`
-	ConfigChan chan *json.RawMessage `json:"-"`
+	Conn       *websocket.Conn          `json:"-"`
+	CloseChan  chan bool                `json:"-"`
+	ConfigChan chan types.ConfigMessage `json:"-"`
 }
 
 // Create creates a new Socket, with a valid api attached
-func Create(configChan chan *json.RawMessage, conn *websocket.Conn) *Socket {
+func Create(configChan chan types.ConfigMessage, conn *websocket.Conn) *Socket {
 	socket := &Socket{
 		Conn:       conn,
 		CloseChan:  make(chan bool),
@@ -42,18 +43,15 @@ func (w *Socket) Read() {
 			log.Println("Read->w.Conn.ReadMessage", err)
 			return
 		}
-		log.Printf("message: %v\n", p)
-		var message struct {
-			API      *json.RawMessage
-			Position *json.RawMessage
-		}
+
+		var message types.ConfigMessage
 		utils.ParseJSON(p, &message)
 		if err != nil {
 			log.Println("Socket Message Parsing:", err)
 			continue
 		}
 
-		w.ConfigChan <- message.API
+		w.ConfigChan <- message
 	}
 }
 
