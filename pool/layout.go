@@ -46,7 +46,6 @@ func LoadLayout(name string) Layout {
 		List []*json.RawMessage
 	}
 	dataDecoder := json.NewDecoder(dataFile)
-	log.Printf("Decoding!\n")
 	err = dataDecoder.Decode(&layout)
 	if err != nil {
 		log.Printf("Error Decoding layout %s: %v\n", name, err)
@@ -56,7 +55,6 @@ func LoadLayout(name string) Layout {
 		log.Printf("Layout name requested (%s) and retrieved from file (%s) do not match!\n", name, layout.Name)
 		return Layout{}
 	}
-	log.Printf("Looping!\n")
 	var list []types.API
 	for _, body := range layout.List {
 		list = append(list, api.Unmarshal(body))

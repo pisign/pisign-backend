@@ -10,7 +10,6 @@ import (
 
 // Unmarshal an API of unknown type
 func Unmarshal(body *json.RawMessage) types.API {
-	log.Printf("Unmarshalling!\n")
 	var name struct {
 		Name string
 	}
@@ -19,7 +18,6 @@ func Unmarshal(body *json.RawMessage) types.API {
 		log.Println("Could not unmarshal API: ", err)
 		return nil
 	}
-	log.Printf("Creating new API %s\n", name.Name)
 
 	newAPI, err := NewAPI(name.Name, nil, nil)
 	if err != nil {

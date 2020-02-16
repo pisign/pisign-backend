@@ -54,8 +54,6 @@ func (w *Socket) Read() {
 		}
 
 		w.ConfigChan <- message.API
-
-		log.Printf("Socket with new data: %+v\n", w)
 	}
 }
 
@@ -72,42 +70,4 @@ func (w *Socket) Close() chan bool {
 func (w *Socket) String() string {
 	str, _ := json.Marshal(w)
 	return string(str)
-}
-
-// UnmarshalJSON for Socket
-// Dynamically creates correct type of api for properly unmarshalling
-func (w *Socket) UnmarshalJSON(body []byte) error {
-	//TODO: find better way to Unmarshal Socket
-	//log.Printf("w.API: %v\n", w.API)
-	// var fields struct {
-	// 	API      *json.RawMessage
-	// 	Position *json.RawMessage
-	// }
-	// err := utils.ParseJSON(body, &fields)
-	// if err != nil {
-	// 	log.Println("Could not unmarshal Socket: ", err)
-	// 	return err
-	// }
-
-	// var APIFields struct {
-	// 	Name string
-	// }
-
-	// err = utils.ParseJSON(*fields.API, &APIFields)
-	// if err != nil {
-	// 	log.Printf("Could not unmarshal Socket: no `API.Name` field present: %v\n", err)
-	// 	return err
-	// }
-	// log.Printf("fields: %v\n", fields)
-	// log.Printf("API: %s, Position: %s\n", fields.API, fields.Position)
-
-	// newAPI, err := api.NewAPI(APIFields.Name, nil)
-	// if err != nil {
-	// 	log.Printf("Unknown API type: %s\n", APIFields.Name)
-	// 	return err
-	// }
-
-	// utils.ParseJSON(*fields.API, newAPI)
-
-	return nil
 }

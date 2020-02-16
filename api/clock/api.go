@@ -4,6 +4,7 @@ package clock
 import (
 	"encoding/json"
 	"log"
+	"reflect"
 	"time"
 
 	"github.com/pisign/pisign-backend/types"
@@ -12,9 +13,8 @@ import (
 // API for clock
 type API struct {
 	types.BaseAPI
-	Location string
-	Format   string
-	Time     time.Time
+	Location string    `json:"-"`
+	Time     time.Time `json:"-"`
 }
 
 // NewAPI creates a new clock api
@@ -24,6 +24,7 @@ func NewAPI(configChan chan *json.RawMessage, pool types.Pool) *API {
 	if a.Pool != nil {
 		a.Pool.Register(a)
 	}
+
 	a.Location = "Local"
 	return a
 }
@@ -43,15 +44,21 @@ func (a *API) Configure(body *json.RawMessage) {
 
 	var config types.ClockConfig
 	if err := json.Unmarshal(*body, &config); err == nil {
+		v := reflect.ValueOf(config)
+		t := v.Type()
+		for i := 0; i < v.NumField(); i++ {
+			log.Printf("Field: %v, value: %v\n", t.Field(i).Name, v.Field(i))
+		}
 		_, err = time.LoadLocation(config.Location)
 		if err != nil {
 			log.Printf("Could not load timezone %s: %s", config.Location, err)
 			return
 		}
 		a.Location = config.Location
+		a.Config["Location"] = config.Location
 		log.Println("Clock configuration successful!", "a = ", a)
 	}
-
+	a.Pool.Save()
 }
 
 // Data gets the current time!
@@ -69,6 +76,8 @@ func (a *API) Run(w types.Socket) {
 	}()
 	for {
 		select {
+		case body := <-a.ConfigChan:
+			a.Configure(body)
 		case <-w.Close():
 			return
 		default:

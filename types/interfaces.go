@@ -30,13 +30,13 @@ type API interface {
 // Socket interface, needed to avoid circular dependency with Socket package
 // TODO: See if we can remove this interface without adding a circular dependency?
 type Socket interface {
-	json.Unmarshaler
-
 	// Read information from the client
 	Read()
 
 	// Send information to the client
 	Send(interface{})
+
+	// Close the socket
 	Close() chan bool
 }
 
@@ -45,4 +45,5 @@ type Pool interface {
 	Start()
 	Register(API)
 	Unregister(API)
+	Save()
 }
