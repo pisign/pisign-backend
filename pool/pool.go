@@ -3,7 +3,6 @@ package pool
 import (
 	"log"
 
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -37,9 +36,9 @@ func (pool *Pool) List() []types.API {
 }
 
 func (pool *Pool) save() error {
-	Map := pool.List()
-	layout := api.Layout{Map: Map, Name: pool.name}
-	return api.SaveLayout(layout)
+	list := pool.List()
+	layout := Layout{List: list, Name: pool.name}
+	return SaveLayout(layout)
 }
 
 // Start main entry point of a pool

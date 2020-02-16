@@ -57,7 +57,7 @@ func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Printf("Retrieving layout data for %s...\n", layoutName)
-		fmt.Fprintf(w, "%+v", api.LoadLayout(layoutName))
+		fmt.Fprintf(w, "%+v", pool.LoadLayout(layoutName))
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
