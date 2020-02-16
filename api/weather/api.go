@@ -46,7 +46,9 @@ func (a *API) Data() interface{} {
 func NewAPI(configChan chan *json.RawMessage, pool types.Pool) *API {
 	a := new(API)
 	a.BaseAPI.Init("weather", configChan, pool)
-	a.Pool.Register(a)
+	if a.Pool != nil {
+		a.Pool.Register(a)
+	}
 	return a
 }
 

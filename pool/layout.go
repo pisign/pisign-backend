@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/pisign/pisign-backend/api"
+
 	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 )
@@ -29,29 +31,37 @@ func getFilename(name string) string {
 
 // LoadLayout returns the stored layout of the given name
 func LoadLayout(name string) Layout {
-	return Layout{}
-	// TODO fix this
-	//log.Printf("Loading layout %s\n", name)
-	//dataFile, err := os.Open(getFilename(name))
-	//
-	//if err != nil {
-	//	log.Printf("Error Opening file for layout %s: %v\n", name, err)
-	//	return Layout{}
-	//}
-	//defer dataFile.Close()
-	//
-	//var layout Layout
-	//dataDecoder := json.NewDecoder(dataFile)
-	//err = dataDecoder.Decode(&layout)
-	//if err != nil {
-	//	log.Printf("Error Decoding layout %s: %v\n", name, err)
-	//	return Layout{}
-	//}
-	//if layout.Name != name {
-	//	log.Printf("Layout name requested (%s) and retrieved from file (%s) do not match!\n", name, layout.Name)
-	//	return Layout{}
-	//}
-	//return layout
+	log.Printf("Loading layout %s\n", name)
+
+	dataFile, err := os.Open(getFilename(name))
+
+	if err != nil {
+		log.Printf("Error Opening file for layout %s: %v\n", name, err)
+		return Layout{}
+	}
+	defer dataFile.Close()
+
+	var layout struct {
+		Name string
+		List []*json.RawMessage
+	}
+	dataDecoder := json.NewDecoder(dataFile)
+	log.Printf("Decoding!\n")
+	err = dataDecoder.Decode(&layout)
+	if err != nil {
+		log.Printf("Error Decoding layout %s: %v\n", name, err)
+		return Layout{}
+	}
+	if layout.Name != name {
+		log.Printf("Layout name requested (%s) and retrieved from file (%s) do not match!\n", name, layout.Name)
+		return Layout{}
+	}
+	log.Printf("Looping!\n")
+	var list []types.API
+	for _, body := range layout.List {
+		list = append(list, api.Unmarshal(body))
+	}
+	return Layout{Name: layout.Name, List: list}
 }
 
 // SaveLayout stores layout to a local json file

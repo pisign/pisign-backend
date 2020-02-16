@@ -8,7 +8,7 @@ import (
 
 // BaseAPI base for all APIs
 type BaseAPI struct {
-	Position   Position `json:"-"`
+	Position
 	Name       string
 	ConfigChan chan *json.RawMessage `json:"-"`
 	Pool       Pool                  `json:"-"`

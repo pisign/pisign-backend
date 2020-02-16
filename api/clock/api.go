@@ -21,7 +21,9 @@ type API struct {
 func NewAPI(configChan chan *json.RawMessage, pool types.Pool) *API {
 	a := new(API)
 	a.BaseAPI.Init("clock", configChan, pool)
-	a.Pool.Register(a)
+	if a.Pool != nil {
+		a.Pool.Register(a)
+	}
 	a.Location = "Local"
 	return a
 }
