@@ -2,8 +2,6 @@ package types
 
 import (
 	"encoding/json"
-
-	"github.com/pisign/pisign-backend/utils"
 )
 
 // DataObject holds the data from the external API
@@ -47,31 +45,4 @@ type Pool interface {
 	Start()
 	Register(API)
 	Unregister(API)
-}
-
-// BaseAPI base for all APIs
-type BaseAPI struct {
-	Position   Position
-	Name       string
-	ConfigChan chan *json.RawMessage `json:"-"`
-	Pool       Pool
-}
-
-// Init Initialization
-func (b *BaseAPI) Init(name string, configChan chan *json.RawMessage, pool Pool) {
-	b.Name = name
-	b.ConfigChan = configChan
-	b.Pool = pool
-}
-
-func (b *BaseAPI) GetName() string {
-	return b.Name
-}
-
-// ConfigurePosition configures position
-func (b *BaseAPI) ConfigurePosition(body *json.RawMessage) {
-	err := utils.ParseJSON(*body, &b.Position)
-	if err != nil {
-		panic("OH NO")
-	}
 }

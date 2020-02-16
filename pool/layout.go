@@ -1,4 +1,4 @@
-package api
+package pool
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ const storageFolder string = "layouts"
 // Each layout is stored serverside to be retrieved later by the client
 type Layout struct {
 	Name string
-	Map  []types.API
+	List []types.API
 }
 
 func getFilename(name string) string {
