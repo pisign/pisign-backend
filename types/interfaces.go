@@ -1,9 +1,5 @@
 package types
 
-import (
-	"encoding/json"
-)
-
 // DataObject holds the data from the external API
 type DataObject interface {
 	// Build builds the data object
@@ -28,7 +24,6 @@ type API interface {
 }
 
 // Socket interface, needed to avoid circular dependency with Socket package
-// TODO: See if we can remove this interface without adding a circular dependency?
 type Socket interface {
 	// Read information from the client
 	Read()
@@ -46,10 +41,4 @@ type Pool interface {
 	Register(API)
 	Unregister(API)
 	Save()
-}
-
-// ConfigMessage for configuring
-type ConfigMessage struct {
-	Position
-	Config json.RawMessage
 }
