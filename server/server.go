@@ -79,7 +79,7 @@ func setupRoutes() {
 
 // StartLocalServer creates a new server on localhost
 func StartLocalServer(port int) {
-	addr := fmt.Sprintf("localhost:%v", port)
+	addr := fmt.Sprintf("0.0.0.0:%v", port)
 	log.Printf("Running server at %v\n", addr)
 	setupRoutes()
 	http.ListenAndServe(addr, nil)
