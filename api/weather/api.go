@@ -11,7 +11,7 @@ import (
 // API for weather
 type API struct {
 	types.BaseAPI
-	config     types.WeatherConfig
+	Config     types.WeatherConfig
 	LastCalled time.Time `json:"-"`
 	// This is the object we get from the backend API - we could possible remove this and just have the ResponseObject
 	DataObject OpenWeatherResponse `json:"-"`
@@ -29,7 +29,7 @@ func (a *API) Data() interface{} {
 	}
 
 	// Otherwise, update the response object
-	a.DataObject.Update(a.config)
+	a.DataObject.Update(a.Config)
 	response := a.DataObject.Transform()
 	a.ResponseObject = *(response.(*types.WeatherResponse))
 	a.LastCalled = time.Now()
@@ -51,7 +51,7 @@ func (a *API) Configure(body types.ConfigMessage) {
 	a.ConfigurePosition(body.Position)
 	log.Println("Configuring WEATHER:", body)
 
-	if err := json.Unmarshal(body.Config, &a.config); err != nil {
+	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
 		log.Println("Could not properly configure weather")
 		return
 	}
