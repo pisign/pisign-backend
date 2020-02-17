@@ -8,6 +8,20 @@ import (
 	"github.com/pisign/pisign-backend/utils"
 )
 
+func Test_Configure(t *testing.T) {
+	a := NewAPI(nil, nil)
+	if err := a.Configure(types.ConfigMessage{}); err == nil {
+		t.Error("somehow we didn't return an error after configuring junk")
+	}
+}
+
+func Test_GetName(t *testing.T) {
+	a := NewAPI(nil, nil)
+	if a.GetName() != "weather" {
+		t.Error("somehow we didn't return the name")
+	}
+}
+
 func Test_buildurl(t *testing.T) {
 	url := buildurl(90000, "API_KEY")
 	if url != "https://api.openweathermap.org/data/2.5/weather?zip=90000,us&APPID=API_KEY" {

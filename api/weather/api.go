@@ -6,9 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/pisign/pisign-backend/utils"
-
 	"github.com/pisign/pisign-backend/types"
+	"github.com/pisign/pisign-backend/utils"
 )
 
 // API for weather
@@ -20,12 +19,13 @@ type API struct {
 	DataObject OpenWeatherResponse `json:"-"`
 	// This is the object we are passing to the frontend - only need to rebuild it when its stale
 	ResponseObject types.WeatherResponse `json:"-"`
+	ValidCache     bool
 }
 
 // Data gets the data to send to the websocket
 func (a *API) Data() interface{} {
 	// Data should handle how to retrieve the data
-	if time.Now().Sub(a.LastCalled) < (time.Second * 10) {
+	if time.Now().Sub(a.LastCalled) < (time.Second*10) && a.ValidCache {
 		// Send the old response object
 		log.Println("using cached value")
 		return &a.ResponseObject
@@ -41,6 +41,7 @@ func (a *API) Data() interface{} {
 	if err != nil {
 		a.ResponseObject.Status = types.StatusFailure
 		a.ResponseObject.ErrorMessage = err.Error()
+		a.ValidCache = false
 		return &a.ResponseObject
 	}
 
@@ -49,6 +50,7 @@ func (a *API) Data() interface{} {
 	response := a.DataObject.Transform()
 	a.ResponseObject = *(response.(*types.WeatherResponse))
 	a.LastCalled = time.Now()
+	a.ValidCache = true
 	return &a.ResponseObject
 }
 
@@ -59,6 +61,7 @@ func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
 	if a.Pool != nil {
 		a.Pool.Register(a)
 	}
+	a.ValidCache = false
 	return a
 }
 
@@ -88,6 +91,8 @@ func (a *API) Run(w types.Socket) {
 		case data := <-a.ConfigChan:
 			if err := a.Configure(data); err != nil {
 				utils.SendErrorMessage(w, err.Error())
+			} else {
+				w.Send(a.Data())
 			}
 		case <-w.Close():
 			return
