@@ -12,7 +12,7 @@ import (
 // API for clock
 type API struct {
 	types.BaseAPI
-	Config types.ClockConfig
+	config types.ClockConfig
 	Time   time.Time `json:"-"`
 }
 
@@ -23,12 +23,12 @@ func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
 	if a.Pool != nil {
 		a.Pool.Register(a)
 	}
-	a.Config.Location = "Local"
+	a.config.Location = "Local"
 	return a
 }
 
 func (a *API) loc() *time.Location {
-	t, err := time.LoadLocation(a.Config.Location)
+	t, err := time.LoadLocation(a.config.Location)
 	if err != nil {
 		t, _ = time.LoadLocation("Local")
 	}
@@ -38,23 +38,25 @@ func (a *API) loc() *time.Location {
 // Configure for clock
 func (a *API) Configure(body types.ConfigMessage) {
 	a.ConfigurePosition(body.Position)
-	log.Println("Configuring CLOCK!")
-	log.Printf("Config: %+v\n", body)
+	log.Println("Configuring CLOCK:", body)
+	oldConfig := a.config
 
-	if err := json.Unmarshal(body.Config, &a.Config); err == nil {
-		_, err = time.LoadLocation(a.Config.Location)
-		if err != nil {
-			log.Printf("Could not load timezone %s: %s", a.Config.Location, err)
-			return
-		}
-		log.Println("Clock configuration successful!", "a = ", a)
+	if err := json.Unmarshal(body.Config, &a.config); err != nil {
+		log.Println("Could not properly configure clock")
+		a.config = oldConfig
+		return
 	}
+	if _, err := time.LoadLocation(a.config.Location); err != nil {
+		log.Printf("Could not load timezone %s: %s", a.config.Location, err)
+		a.config.Location = oldConfig.Location // Revert to old location
+	}
+	log.Println("Clock configuration successful:", a)
 	a.Pool.Save()
 }
 
 // Data gets the current time!
 func (a *API) Data() interface{} {
-	return types.ClockOut{Time: a.Time.In(a.loc()).String()}
+	return types.ClockResponse{Time: a.Time.In(a.loc()).String()}
 }
 
 // Run main entry point to clock API

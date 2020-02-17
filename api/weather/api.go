@@ -11,18 +11,12 @@ import (
 // API for weather
 type API struct {
 	types.BaseAPI
-	Config     APISettings
+	config     types.WeatherConfig
 	LastCalled time.Time `json:"-"`
 	// This is the object we get from the backend API - we could possible remove this and just have the ResponseObject
 	DataObject OpenWeatherResponse `json:"-"`
 	// This is the object we are passing to the frontend - only need to rebuild it when its stale
 	ResponseObject types.WeatherResponse `json:"-"`
-}
-
-// APISettings are the config settings for the API
-type APISettings struct {
-	Zip    int
-	APIKey string
 }
 
 // Data gets the data to send to the websocket
@@ -35,7 +29,7 @@ func (a *API) Data() interface{} {
 	}
 
 	// Otherwise, update the response object
-	a.DataObject.Update(a.Config)
+	a.DataObject.Update(a.config)
 	response := a.DataObject.Transform()
 	a.ResponseObject = *(response.(*types.WeatherResponse))
 	a.LastCalled = time.Now()
@@ -55,12 +49,13 @@ func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
 // Configure for weather
 func (a *API) Configure(body types.ConfigMessage) {
 	a.ConfigurePosition(body.Position)
-	log.Println("Configuring WEATHER!")
-	err := json.Unmarshal(body.Config, &a.Config)
-	if err != nil {
-		log.Println("Error configuring weather api:", err)
+	log.Println("Configuring WEATHER:", body)
+
+	if err := json.Unmarshal(body.Config, &a.config); err != nil {
+		log.Println("Could not properly configure weather")
 		return
 	}
+	log.Println("Weather configuration successfully:", a)
 }
 
 // Run main entry point to weather API

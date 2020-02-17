@@ -74,3 +74,9 @@ type WeatherResponse struct {
 func (w WeatherResponse) Cache() {
 	// TODO figure out how to cache these results for later, use something like redis?
 }
+
+// WeatherConfig are the config settings for the API
+type WeatherConfig struct {
+	Zip    int
+	APIKey string
+}
