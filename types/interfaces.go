@@ -33,6 +33,9 @@ type Socket interface {
 
 	// Close the socket
 	Close() chan bool
+
+	// SendErrorMessage sends error message
+	SendErrorMessage(string)
 }
 
 // Pool pool
