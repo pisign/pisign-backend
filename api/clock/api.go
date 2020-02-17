@@ -14,11 +14,11 @@ import (
 type API struct {
 	types.BaseAPI
 	Config types.ClockConfig
-	time   time.Time `json:"-"`
+	time   time.Time
 }
 
 // NewAPI creates a new clock api
-func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
+func NewAPI(configChan chan types.ClientMessage, pool types.Pool) *API {
 	a := new(API)
 	a.BaseAPI.Init("clock", configChan, pool)
 	if a.Pool != nil {
@@ -37,7 +37,7 @@ func (a *API) loc() *time.Location {
 }
 
 // Configure for clock
-func (a *API) Configure(body types.ConfigMessage) error {
+func (a *API) Configure(body types.ClientMessage) error {
 	a.ConfigurePosition(body.Position)
 	log.Println("Configuring CLOCK:", body)
 	oldConfig := a.Config
@@ -76,7 +76,7 @@ func (a *API) Run(w types.Socket) {
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
 		ticker.Stop()
-		log.Println("STOPPING CLOCK")
+		log.Printf("STOPPING CLOCK: %s\n", a.UUID)
 	}()
 	for {
 		select {
@@ -85,10 +85,12 @@ func (a *API) Run(w types.Socket) {
 			if err != nil {
 				w.SendErrorMessage(err.Error())
 			}
-		case <-w.Close():
+		case d := <-w.Close():
+			if d {
+				a.Pool.Unregister(a)
+			}
 			return
-		default:
-			t := <-ticker.C
+		case t := <-ticker.C:
 			a.time = t
 			w.Send(a.Data())
 		}

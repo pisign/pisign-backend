@@ -11,8 +11,18 @@ type Position struct {
 	I string `json:"i"`
 }
 
-// ConfigMessage for configuring
-type ConfigMessage struct {
-	Position
-	Config json.RawMessage
+// ClientAction is fun
+type ClientAction string
+
+// Types of actions
+const (
+	Configure ClientAction = "CONFIGURE"
+	Delete    ClientAction = "DELETE"
+)
+
+// ClientMessage for configuring
+type ClientMessage struct {
+	Action   ClientAction
+	Position Position
+	Config   json.RawMessage
 }

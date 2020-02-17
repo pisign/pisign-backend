@@ -16,11 +16,12 @@ import (
 type Socket struct {
 	Conn       *websocket.Conn          `json:"-"`
 	CloseChan  chan bool                `json:"-"`
-	ConfigChan chan types.ConfigMessage `json:"-"`
+	ConfigChan chan types.ClientMessage `json:"-"`
+	DeleteChan chan bool                `json:"-"`
 }
 
 // Create creates a new Socket, with a valid api attached
-func Create(configChan chan types.ConfigMessage, conn *websocket.Conn) *Socket {
+func Create(configChan chan types.ClientMessage, conn *websocket.Conn) *Socket {
 	socket := &Socket{
 		Conn:       conn,
 		CloseChan:  make(chan bool),
@@ -41,7 +42,7 @@ func (w *Socket) SendErrorMessage(message string) {
 func (w *Socket) Read() {
 	// The only time the socket is recieving data is when it is getting configutation data
 	defer func() {
-		w.CloseChan <- true
+		log.Println("CLOSING SOCKET")
 		w.Conn.Close()
 	}()
 
@@ -49,17 +50,25 @@ func (w *Socket) Read() {
 		_, p, err := w.Conn.ReadMessage()
 		if err != nil {
 			log.Println("Read->w.Conn.ReadMessage", err)
+			w.CloseChan <- false
 			return
 		}
 
-		var message types.ConfigMessage
-		utils.ParseJSON(p, &message)
-		if err != nil {
+		var message types.ClientMessage
+		if err := utils.ParseJSON(p, &message); err != nil {
 			log.Println("Socket Message Parsing:", err)
 			continue
 		}
 
-		w.ConfigChan <- message
+		switch message.Action {
+		case types.Configure:
+			w.ConfigChan <- message
+		case types.Delete:
+			w.CloseChan <- true
+			return
+		default:
+			log.Printf("Unknown client action: %s\n", message.Action)
+		}
 	}
 }
 
