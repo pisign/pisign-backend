@@ -1,4 +1,5 @@
 type WeatherResponse {
+    BaseMessage  BaseMessage
     Coord        Coord
     Weather      []types.Weather
     Base         string
@@ -22,6 +23,7 @@ type Coord {
 }
 
 type WeatherResponse {
+    BaseMessage  BaseMessage
     Coord        Coord
     Weather      []types.Weather
     Base         string
