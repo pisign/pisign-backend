@@ -12,7 +12,7 @@ type DataObject interface {
 // API is the entrance point of all apis to connect to a client
 type API interface {
 	// Configure settings from raw json message
-	Configure(message ConfigMessage)
+	Configure(message ConfigMessage) error
 
 	// Main loop that faciliates interaction between outside world and the client widet
 	Run(w Socket)
