@@ -84,10 +84,14 @@ func (o *OpenWeatherResponse) Update(arguments interface{}) error {
 
 	url := buildurl(zipcode, apikey)
 	resp := utils.GetAPIData(url)
-	defer resp.Body.Close()
+
+	defer func() {
+		utils.WrapError(resp.Body.Close())
+	}()
 
 	body := utils.ParseResponse(resp)
-	utils.ParseJSON(body, &o)
+	err := utils.ParseJSON(body, &o)
+	utils.WrapError(err)
 	return nil
 }
 
@@ -96,7 +100,9 @@ func (o *OpenWeatherResponse) Transform() interface{} {
 	weatherResponse := types.WeatherResponse{
 		Name: o.Name,
 		Main: types.Main{
-			Temp: kelvinToF(o.Main.Temp),
+			Temp:    kelvinToF(o.Main.Temp),
+			TempMax: kelvinToF(o.Main.TempMax),
+			TempMin: kelvinToF(o.Main.TempMin),
 		},
 	}
 
