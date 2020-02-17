@@ -56,7 +56,13 @@ func (a *API) Configure(body types.ConfigMessage) {
 
 // Data gets the current time!
 func (a *API) Data() interface{} {
-	return types.ClockResponse{Time: a.time.In(a.loc()).String()}
+	return types.ClockResponse{
+		Time: a.time.In(a.loc()).String(),
+		BaseMessage: types.BaseMessage{
+			Status:       types.StatusSuccess,
+			ErrorMessage: "",
+		},
+	}
 }
 
 // Run main entry point to clock API

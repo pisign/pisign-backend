@@ -29,7 +29,20 @@ func (a *API) Data() interface{} {
 	}
 
 	// Otherwise, update the response object
-	a.DataObject.Update(a.Config)
+	err := a.DataObject.Update(a.Config)
+
+	// If there was an error updating the data object,
+	// set response object to error'ed out and return it
+	// TODO possibly delete the ResponseObject before doing this
+	// so that the data is all 0'ed?
+	if err != nil {
+		a.ResponseObject.Status = types.StatusFailure
+		a.ResponseObject.ErrorMessage = err.Error()
+		return &a.ResponseObject
+	}
+
+	a.ResponseObject.Status = types.StatusSuccess
+
 	response := a.DataObject.Transform()
 	a.ResponseObject = *(response.(*types.WeatherResponse))
 	a.LastCalled = time.Now()

@@ -3,7 +3,7 @@ package types
 // DataObject holds the data from the external API
 type DataObject interface {
 	// Build builds the data object
-	Update(interface{})
+	Update(interface{}) error
 
 	// Transform turns the data object into a front-end parsable object
 	Transform() interface{}

@@ -53,6 +53,7 @@ type Sys struct {
 
 // WeatherResponse is the struct that encodes the API data from our weather API
 type WeatherResponse struct {
+	BaseMessage
 	Coord      Coord
 	Weather    []Weather
 	Base       string
@@ -68,11 +69,6 @@ type WeatherResponse struct {
 	Name       string
 	COD        float64
 	Zipcode    float64
-}
-
-// Cache caches the response
-func (w WeatherResponse) Cache() {
-	// TODO figure out how to cache these results for later, use something like redis?
 }
 
 // WeatherConfig are the config settings for the API

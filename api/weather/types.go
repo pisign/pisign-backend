@@ -1,8 +1,8 @@
 package weather
 
 import (
-	"fmt"
-	"os"
+	"errors"
+	"log"
 
 	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
@@ -71,16 +71,15 @@ type OpenWeatherResponse struct {
 }
 
 // Update builds the data object
-func (o *OpenWeatherResponse) Update(arguments interface{}) {
+func (o *OpenWeatherResponse) Update(arguments interface{}) error {
 	a := (arguments).(types.WeatherConfig)
 	apikey := a.APIKey
 	zipcode := a.Zip
 
 	if apikey == "" {
 		// TODO better error handling
-		fmt.Fprintf(os.Stderr, "No API key found for weather API")
-		//panic("no api key found")
-		return
+		log.Println("No API key found for weather API")
+		return errors.New("no api key found")
 	}
 
 	url := buildurl(zipcode, apikey)
@@ -89,6 +88,7 @@ func (o *OpenWeatherResponse) Update(arguments interface{}) {
 
 	body := utils.ParseResponse(resp)
 	utils.ParseJSON(body, &o)
+	return nil
 }
 
 // Transform turns the OpenWeatherResponse into a WeatherResponse
