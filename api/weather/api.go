@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/pisign/pisign-backend/types"
-	"github.com/pisign/pisign-backend/utils"
 )
 
 // API for weather
@@ -90,7 +89,7 @@ func (a *API) Run(w types.Socket) {
 		select {
 		case data := <-a.ConfigChan:
 			if err := a.Configure(data); err != nil {
-				utils.SendErrorMessage(w, err.Error())
+				w.SendErrorMessage(err.Error())
 			} else {
 				w.Send(a.Data())
 			}

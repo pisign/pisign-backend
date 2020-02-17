@@ -7,8 +7,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/pisign/pisign-backend/utils"
-
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -85,7 +83,7 @@ func (a *API) Run(w types.Socket) {
 		case body := <-a.ConfigChan:
 			err := a.Configure(body)
 			if err != nil {
-				utils.SendErrorMessage(w, err.Error())
+				w.SendErrorMessage(err.Error())
 			}
 		case <-w.Close():
 			return

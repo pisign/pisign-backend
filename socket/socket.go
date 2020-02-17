@@ -30,6 +30,14 @@ func Create(configChan chan types.ConfigMessage, conn *websocket.Conn) *Socket {
 	return socket
 }
 
+// SendErrorMessage sends the error message
+func (w *Socket) SendErrorMessage(message string) {
+	w.Send(types.BaseMessage{
+		Status:       types.StatusFailure,
+		ErrorMessage: message,
+	})
+}
+
 func (w *Socket) Read() {
 	// The only time the socket is recieving data is when it is getting configutation data
 	defer func() {
