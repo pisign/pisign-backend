@@ -1,4 +1,5 @@
 type WeatherResponse {
+    BaseMessage  BaseMessage
     Coord        Coord
     Weather      []types.Weather
     Base         string
@@ -19,24 +20,6 @@ type WeatherResponse {
 type Coord {
     Lon          float64
     Lat          float64
-}
-
-type WeatherResponse {
-    Coord        Coord
-    Weather      []types.Weather
-    Base         string
-    Main         Main
-    Visibility   float64
-    Wind         Wind
-    Rain         Rain
-    Clouds       Clouds
-    DT           float64
-    Sys          Sys
-    Timezone     float64
-    ID           float64
-    Name         string
-    COD          float64
-    Zipcode      float64
 }
 
 type Main {
@@ -67,5 +50,15 @@ type Sys {
     Country      string
     Sunrise      float64
     Sunset       float64
+}
+
+type BaseMessage {
+    Status       MessageStatus
+    ErrorMessage string
+}
+
+type ClockResponse {
+    BaseMessage  BaseMessage
+    Time         string
 }
 

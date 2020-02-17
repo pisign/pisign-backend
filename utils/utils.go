@@ -41,6 +41,13 @@ func ParseJSON(body []byte, i interface{}) error {
 	return err
 }
 
+// WrapError wraps an error
+func WrapError(e error) {
+	if e != nil {
+		log.Println(e.Error())
+	}
+}
+
 // StructPrint prints out the structure of a Struct
 func StructPrint(v interface{}) {
 

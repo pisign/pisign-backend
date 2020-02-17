@@ -3,6 +3,7 @@ package clock
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"time"
 
@@ -36,7 +37,7 @@ func (a *API) loc() *time.Location {
 }
 
 // Configure for clock
-func (a *API) Configure(body types.ClientMessage) {
+func (a *API) Configure(body types.ClientMessage) error {
 	a.ConfigurePosition(body.Position)
 	log.Println("Configuring CLOCK:", body)
 	oldConfig := a.Config
@@ -44,19 +45,29 @@ func (a *API) Configure(body types.ClientMessage) {
 	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
 		log.Println("Could not properly configure clock")
 		a.Config = oldConfig
-		return
+		return errors.New("could not properly configure clock")
 	}
+
 	if _, err := time.LoadLocation(a.Config.Location); err != nil {
 		log.Printf("Could not load timezone %s: %s", a.Config.Location, err)
 		a.Config.Location = oldConfig.Location // Revert to old location
+		return errors.New("could not load timezone " + a.Config.Location)
 	}
+
 	log.Println("Clock configuration successful:", a)
 	a.Pool.Save()
+	return nil
 }
 
 // Data gets the current time!
 func (a *API) Data() interface{} {
-	return types.ClockResponse{Time: a.time.In(a.loc()).String()}
+	return types.ClockResponse{
+		Time: a.time.In(a.loc()).String(),
+		BaseMessage: types.BaseMessage{
+			Status:       types.StatusSuccess,
+			ErrorMessage: "",
+		},
+	}
 }
 
 // Run main entry point to clock API
@@ -70,7 +81,10 @@ func (a *API) Run(w types.Socket) {
 	for {
 		select {
 		case body := <-a.ConfigChan:
-			a.Configure(body)
+			err := a.Configure(body)
+			if err != nil {
+				w.SendErrorMessage(err.Error())
+			}
 		case d := <-w.Close():
 			if d {
 				a.Pool.Unregister(a)

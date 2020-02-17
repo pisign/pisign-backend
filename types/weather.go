@@ -19,9 +19,9 @@ type Weather struct {
 // Main contains a quick description of weather
 type Main struct {
 	Temp      float64
-	FeelsLike float64 `json:"feels_like"`
-	TempMin   float64 `json:"temp_min"`
-	TempMax   float64 `json:"temp_max"`
+	FeelsLike float64
+	TempMin   float64
+	TempMax   float64
 	Pressure  float64
 	Humidity  float64
 }
@@ -53,6 +53,7 @@ type Sys struct {
 
 // WeatherResponse is the struct that encodes the API data from our weather API
 type WeatherResponse struct {
+	BaseMessage
 	Coord      Coord
 	Weather    []Weather
 	Base       string
@@ -68,11 +69,6 @@ type WeatherResponse struct {
 	Name       string
 	COD        float64
 	Zipcode    float64
-}
-
-// Cache caches the response
-func (w WeatherResponse) Cache() {
-	// TODO figure out how to cache these results for later, use something like redis?
 }
 
 // WeatherConfig are the config settings for the API

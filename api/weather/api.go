@@ -2,6 +2,7 @@ package weather
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"time"
 
@@ -17,22 +18,38 @@ type API struct {
 	DataObject OpenWeatherResponse `json:"-"`
 	// This is the object we are passing to the frontend - only need to rebuild it when its stale
 	ResponseObject types.WeatherResponse `json:"-"`
+	ValidCache     bool
 }
 
 // Data gets the data to send to the websocket
 func (a *API) Data() interface{} {
 	// Data should handle how to retrieve the data
-	if time.Now().Sub(a.LastCalled) < (time.Second * 10) {
+	if time.Now().Sub(a.LastCalled) < (time.Second*10) && a.ValidCache {
 		// Send the old response object
 		log.Println("using cached value")
 		return &a.ResponseObject
 	}
 
 	// Otherwise, update the response object
-	a.DataObject.Update(a.Config)
+	err := a.DataObject.Update(a.Config)
+
+	// If there was an error updating the data object,
+	// set response object to error'ed out and return it
+	// TODO possibly delete the ResponseObject before doing this
+	// so that the data is all 0'ed?
+	if err != nil {
+		a.ResponseObject.Status = types.StatusFailure
+		a.ResponseObject.ErrorMessage = err.Error()
+		a.ValidCache = false
+		return &a.ResponseObject
+	}
+
+	a.ResponseObject.Status = types.StatusSuccess
+
 	response := a.DataObject.Transform()
 	a.ResponseObject = *(response.(*types.WeatherResponse))
 	a.LastCalled = time.Now()
+	a.ValidCache = true
 	return &a.ResponseObject
 }
 
@@ -43,19 +60,20 @@ func NewAPI(configChan chan types.ClientMessage, pool types.Pool) *API {
 	if a.Pool != nil {
 		a.Pool.Register(a)
 	}
+	a.ValidCache = false
 	return a
 }
 
 // Configure for weather
-func (a *API) Configure(body types.ClientMessage) {
+func (a *API) Configure(body types.ClientMessage) error {
 	a.ConfigurePosition(body.Position)
 	log.Println("Configuring WEATHER:", body)
 
 	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
-		log.Println("Could not properly configure weather")
-		return
+		return errors.New("could not properly configure weather")
 	}
 	log.Println("Weather configuration successfully:", a)
+	return nil
 }
 
 // Run main entry point to weather API
@@ -70,7 +88,11 @@ func (a *API) Run(w types.Socket) {
 	for {
 		select {
 		case data := <-a.ConfigChan:
-			a.Configure(data)
+			if err := a.Configure(data); err != nil {
+				w.SendErrorMessage(err.Error())
+			} else {
+				w.Send(a.Data())
+			}
 		case <-w.Close():
 			return
 		case <-ticker.C:
