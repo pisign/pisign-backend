@@ -2,9 +2,9 @@ package types
 
 // Position information for api widgets
 type Position struct {
-	x int
-	y int
-	w int
-	h int
-	i string
+	X int    `json:"x"`
+	Y int    `json:"y"`
+	W int    `json:"w"`
+	H int    `json:"h"`
+	I string `json:"i"`
 }
