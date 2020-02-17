@@ -37,7 +37,7 @@ func (a *API) Data() interface{} {
 }
 
 // NewAPI creates a new weather api for a client
-func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
+func NewAPI(configChan chan types.ClientMessage, pool types.Pool) *API {
 	a := new(API)
 	a.BaseAPI.Init("weather", configChan, pool)
 	if a.Pool != nil {
@@ -47,7 +47,7 @@ func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
 }
 
 // Configure for weather
-func (a *API) Configure(body types.ConfigMessage) {
+func (a *API) Configure(body types.ClientMessage) {
 	a.ConfigurePosition(body.Position)
 	log.Println("Configuring WEATHER:", body)
 
@@ -73,8 +73,7 @@ func (a *API) Run(w types.Socket) {
 			a.Configure(data)
 		case <-w.Close():
 			return
-		default:
-			<-ticker.C
+		case <-ticker.C:
 			w.Send(a.Data())
 		}
 	}

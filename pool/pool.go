@@ -56,7 +56,8 @@ func (pool *Pool) Start() {
 			pool.Save()
 		case api := <-pool.unregisterChan:
 			delete(pool.Map, api)
-			log.Printf("Lost API: %s\n", api.GetName())
+			pool.Save()
+			log.Printf("Deleted API: %s\n", api.GetName())
 			log.Println("Size of Connection Pool: ", len(pool.Map))
 		}
 	}
