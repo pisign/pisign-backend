@@ -34,6 +34,7 @@ func Create(configChan chan types.ClientMessage, conn *websocket.Conn) *Socket {
 func (w *Socket) Read() {
 	// The only time the socket is recieving data is when it is getting configutation data
 	defer func() {
+		log.Println("CLOSING SOCKET")
 		w.Conn.Close()
 	}()
 

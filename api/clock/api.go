@@ -65,14 +65,14 @@ func (a *API) Run(w types.Socket) {
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
 		ticker.Stop()
-		log.Println("STOPPING CLOCK")
+		log.Printf("STOPPING CLOCK: %s\n", a.UUID)
 	}()
 	for {
 		select {
 		case body := <-a.ConfigChan:
 			a.Configure(body)
-		case delete := <-w.Close():
-			if delete {
+		case d := <-w.Close():
+			if d {
 				a.Pool.Unregister(a)
 			}
 			return

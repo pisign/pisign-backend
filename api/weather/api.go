@@ -64,7 +64,7 @@ func (a *API) Run(w types.Socket) {
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
-		log.Println("STOPPING WEATHER")
+		log.Printf("STOPPING WEATHER: %s\n", a.UUID)
 		a.Pool.Unregister(a)
 	}()
 	for {
