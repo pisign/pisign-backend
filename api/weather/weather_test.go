@@ -10,7 +10,7 @@ import (
 
 func Test_Configure(t *testing.T) {
 	a := NewAPI(nil, nil)
-	if err := a.Configure(types.ConfigMessage{}); err == nil {
+	if err := a.Configure(types.ClientMessage{}); err == nil {
 		t.Error("somehow we didn't return an error after configuring junk")
 	}
 }
