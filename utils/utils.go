@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+
+	"github.com/pisign/pisign-backend/types"
 )
 
 /*
@@ -23,6 +25,14 @@ func GetAPIData(url string) *http.Response {
 		panic("error in GET request")
 	}
 	return resp
+}
+
+// SendErrorMessage sends error message through socket
+func SendErrorMessage(s types.Socket, message string) {
+	s.Send(types.BaseMessage{
+		Status:       types.StatusFailure,
+		ErrorMessage: message,
+	})
 }
 
 // ParseResponse wraps ioutil.Readall

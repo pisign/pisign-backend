@@ -2,8 +2,11 @@ package weather
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"time"
+
+	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/pisign/pisign-backend/types"
 )
@@ -60,15 +63,15 @@ func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
 }
 
 // Configure for weather
-func (a *API) Configure(body types.ConfigMessage) {
+func (a *API) Configure(body types.ConfigMessage) error {
 	a.ConfigurePosition(body.Position)
 	log.Println("Configuring WEATHER:", body)
 
 	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
-		log.Println("Could not properly configure weather")
-		return
+		return errors.New("could not properly configure weather")
 	}
 	log.Println("Weather configuration successfully:", a)
+	return nil
 }
 
 // Run main entry point to weather API
@@ -83,7 +86,9 @@ func (a *API) Run(w types.Socket) {
 	for {
 		select {
 		case data := <-a.ConfigChan:
-			a.Configure(data)
+			if err := a.Configure(data); err != nil {
+				utils.SendErrorMessage(w, err.Error())
+			}
 		case <-w.Close():
 			return
 		default:
