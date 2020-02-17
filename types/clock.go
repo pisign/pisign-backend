@@ -1,7 +1,7 @@
 package types
 
-// ClockOut main format for data coming out of clock api
-type ClockOut struct {
+// ClockResponse main format for data coming out of clock api
+type ClockResponse struct {
 	Time string
 }
 
