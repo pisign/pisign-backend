@@ -72,7 +72,7 @@ type OpenWeatherResponse struct {
 
 // Update builds the data object
 func (o *OpenWeatherResponse) Update(arguments interface{}) {
-	a := (arguments).(APISettings)
+	a := (arguments).(types.WeatherConfig)
 	apikey := a.APIKey
 	zipcode := a.Zip
 
