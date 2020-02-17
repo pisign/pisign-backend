@@ -27,7 +27,7 @@ type API struct {
 }
 
 // NewAPI creates a new API
-func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
+func NewAPI(configChan chan types.ClientMessage, pool types.Pool) *API {
 	a := new(API)
 	a.BaseAPI.Init("<NAME>", configChan, pool)
 	if a.Pool != nil {
@@ -40,7 +40,7 @@ func NewAPI(configChan chan types.ConfigMessage, pool types.Pool) *API {
 }
 
 // Configure from json message sent from client
-func (a *API) Configure(body types.ConfigMessage) {
+func (a *API) Configure(body types.ClientMessage) {
     // Also call parent Configure first
 	a.ConfigurePosition(body.Position)
 
