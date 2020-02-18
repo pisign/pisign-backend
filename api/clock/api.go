@@ -38,10 +38,14 @@ func (a *API) loc() *time.Location {
 
 // Configure for clock
 func (a *API) Configure(body types.ClientMessage) error {
+	defer a.Pool.Save()
 	a.ConfigurePosition(body.Position)
 	log.Println("Configuring CLOCK:", body)
 	oldConfig := a.Config
 
+	if len(body.Config) == 0 {
+		return nil
+	}
 	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
 		log.Println("Could not properly configure clock")
 		a.Config = oldConfig
@@ -55,7 +59,6 @@ func (a *API) Configure(body types.ClientMessage) error {
 	}
 
 	log.Println("Clock configuration successful:", a)
-	a.Pool.Save()
 	return nil
 }
 

@@ -1,5 +1,7 @@
 package types
 
+import "github.com/google/uuid"
+
 // DataObject holds the data from the external API
 type DataObject interface {
 	// Build builds the data object
@@ -21,6 +23,7 @@ type API interface {
 	Data() interface{}
 
 	GetName() string
+	GetUUID() uuid.UUID
 }
 
 // Socket interface, needed to avoid circular dependency with Socket package

@@ -26,6 +26,10 @@ func (b *BaseAPI) GetName() string {
 	return b.Name
 }
 
+func (b *BaseAPI) GetUUID() uuid.UUID {
+	return b.UUID
+}
+
 // ConfigurePosition configures position
 func (b *BaseAPI) ConfigurePosition(pos Position) {
 	b.Position = pos

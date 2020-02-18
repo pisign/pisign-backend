@@ -44,6 +44,10 @@ func (a *API) Configure(body types.ClientMessage) {
     // Also call parent Configure first
 	a.ConfigurePosition(body.Position)
 
+	if len(body.Config) == 0 {
+		return
+	}
+
     // Catch error if object can not be configured properly
 	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
 		log.Println("Could not properly configure clock")

@@ -69,6 +69,9 @@ func (a *API) Configure(body types.ClientMessage) error {
 	a.ConfigurePosition(body.Position)
 	log.Println("Configuring WEATHER:", body)
 
+	if len(body.Config) == 0 {
+		return nil
+	}
 	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
 		return errors.New("could not properly configure weather")
 	}
