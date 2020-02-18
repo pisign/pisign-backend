@@ -10,6 +10,7 @@ const (
 // BaseMessage is the base message we are sending to frontend
 // All structs being send to the frontend should inherit from this
 type BaseMessage struct {
-	Status       MessageStatus
-	ErrorMessage string
+	Status MessageStatus
+	Error  string      `json:",omitempty"`
+	Data   interface{} `json:",omitempty"`
 }
