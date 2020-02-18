@@ -12,7 +12,6 @@ import (
 
 	uuid "github.com/google/uuid"
 
-	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/pool"
 	"github.com/pisign/pisign-backend/types"
 
@@ -31,23 +30,19 @@ func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Req
 
 	apiName := r.FormValue("api")
 	idString := r.FormValue("uuid")
+	id := uuid.MustParse(idString)
 
-	a, err := api.NewAPI(apiName, configChan, pool)
+	ws := socket.Create(configChan, conn)
+
+	err = pool.Add(apiName, id, ws)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()
 		return
 	}
-	id := uuid.MustParse(idString)
-	a.SetUUID(id)
-	pool.Register(a)
-
-	socket := socket.Create(configChan, conn)
 
 	// Socket connection handler should be the one to register, call the read method,
-	// and have the api run the socket
-	go socket.Read()
-	go a.Run(socket)
+	go ws.Read()
 }
 
 func serveLayouts(w http.ResponseWriter, r *http.Request) {

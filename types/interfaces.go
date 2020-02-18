@@ -17,14 +17,15 @@ type API interface {
 	Configure(message ClientMessage) error
 
 	// Main loop that faciliates interaction between outside world and the client widet
-	Run(w Socket)
+	Run()
 
 	// Data gets the data to send
 	Data() interface{}
 
 	GetName() string
 	GetUUID() uuid.UUID
-	SetUUID(uuid.UUID)
+	GetSocket() Socket
+	Stop()
 }
 
 // Socket interface, needed to avoid circular dependency with Socket package
@@ -37,6 +38,9 @@ type Socket interface {
 
 	// Close the socket
 	Close() chan bool
+
+	// Configuration data
+	Config() chan ClientMessage
 
 	// SendErrorMessage sends error message
 	SendErrorMessage(string)
@@ -52,5 +56,7 @@ type Pool interface {
 	Start()
 	Register(API)
 	Unregister(Unregister)
+	Switch(API, string) error
 	Save()
+	Add(apiName string, id uuid.UUID, ws Socket) error
 }

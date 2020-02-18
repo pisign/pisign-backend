@@ -60,7 +60,7 @@ func (w *Socket) Read() {
 		}
 
 		switch message.Action {
-		case types.Configure:
+		case types.Initialize, types.ConfigurePosition, types.ConfigureAPI, types.ChangeAPI:
 			w.ConfigChan <- message
 		case types.Delete:
 			w.CloseChan <- true
@@ -79,6 +79,11 @@ func (w *Socket) Send(msg interface{}) {
 // Close returns a channel that signifies the closing of the Socket
 func (w *Socket) Close() chan bool {
 	return w.CloseChan
+}
+
+// Config for api and position configuration
+func (w *Socket) Config() chan types.ClientMessage {
+	return w.ConfigChan
 }
 
 func (w *Socket) String() string {

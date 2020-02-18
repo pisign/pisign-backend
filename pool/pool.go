@@ -3,6 +3,9 @@ package pool
 import (
 	"log"
 
+	"github.com/google/uuid"
+	"github.com/pisign/pisign-backend/api"
+
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -49,9 +52,9 @@ func (pool *Pool) Save() {
 func (pool *Pool) Start() {
 	for {
 		select {
-		case api := <-pool.registerChan:
-			pool.Map[api] = true
-			log.Printf("New API: %s\n", api.GetName())
+		case a := <-pool.registerChan:
+			pool.Map[a] = true
+			log.Printf("New API: %s\n", a.GetName())
 			log.Println("Size of Connection Pool: ", len(pool.Map))
 			pool.Save()
 		case data := <-pool.unregisterChan:
@@ -66,6 +69,17 @@ func (pool *Pool) Start() {
 	}
 }
 
+func (pool *Pool) Add(apiName string, id uuid.UUID, ws types.Socket) error {
+	a, err := api.NewAPI(apiName, ws, pool, id)
+	if err != nil {
+		return err
+	}
+	pool.Register(a)
+
+	go a.Run()
+	return nil
+}
+
 // Register a new API
 func (pool *Pool) Register(a types.API) {
 	pool.registerChan <- a
@@ -74,4 +88,19 @@ func (pool *Pool) Register(a types.API) {
 // Unregister a new API
 func (pool *Pool) Unregister(data types.Unregister) {
 	pool.unregisterChan <- data
+}
+
+func (pool *Pool) Switch(a types.API, name string) error {
+	log.Printf("Switching api: %s -> %s\n", a.GetName(), name)
+	ws := a.GetSocket()
+	id := a.GetUUID()
+	log.Printf("Stopping old api: %s\n", a.GetName())
+	a.Stop()
+	log.Printf("Unregistering old api: %s\n", a.GetName())
+	pool.Unregister(types.Unregister{API: a, Save: true})
+	log.Printf("Adding new api\n")
+	if err := pool.Add(name, id, ws); err != nil {
+		return err
+	}
+	return nil
 }

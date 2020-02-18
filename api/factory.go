@@ -4,6 +4,7 @@ package api
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/pisign/pisign-backend/types"
 
 	"github.com/pisign/pisign-backend/api/clock"
@@ -16,12 +17,12 @@ type InvalidAPIError struct {
 }
 
 // NewAPI returns a new instance of a specific API based on the name
-func NewAPI(name string, configChan chan types.ClientMessage, pool types.Pool) (types.API, error) {
+func NewAPI(name string, socket types.Socket, pool types.Pool, id uuid.UUID) (types.API, error) {
 	switch name {
 	case "weather":
-		return weather.NewAPI(configChan, pool), nil
+		return weather.NewAPI(socket, pool, id), nil
 	case "clock":
-		return clock.NewAPI(configChan, pool), nil
+		return clock.NewAPI(socket, pool, id), nil
 	default:
 		return nil, InvalidAPIError{name}
 	}

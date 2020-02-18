@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/google/uuid"
+
 	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 )
@@ -19,7 +21,7 @@ func Unmarshal(body *json.RawMessage) types.API {
 		return nil
 	}
 
-	newAPI, err := NewAPI(name.Name, nil, nil)
+	newAPI, err := NewAPI(name.Name, nil, nil, uuid.New())
 	if err != nil {
 		log.Printf("Unknown API type: %v\n", err)
 		return nil
