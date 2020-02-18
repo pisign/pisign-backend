@@ -34,7 +34,7 @@ func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Req
 
 	ws := socket.Create(configChan, conn)
 
-	err = pool.Add(apiName, id, ws)
+	_, err = pool.Add(apiName, id, ws)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()

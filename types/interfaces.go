@@ -25,6 +25,8 @@ type API interface {
 	GetName() string
 	GetUUID() uuid.UUID
 	GetSocket() Socket
+	GetPosition() Position
+	SetPosition(Position)
 	Stop()
 }
 
@@ -58,5 +60,5 @@ type Pool interface {
 	Unregister(Unregister)
 	Switch(API, string) error
 	Save()
-	Add(apiName string, id uuid.UUID, ws Socket) error
+	Add(apiName string, id uuid.UUID, ws Socket) (API, error)
 }

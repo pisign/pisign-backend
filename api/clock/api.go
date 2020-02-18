@@ -58,7 +58,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 		log.Println("Clock configuration successful:", a)
 	case types.ChangeAPI:
-		a.Pool.Switch(a, message.APIName)
+		a.Pool.Switch(a, message.Name)
 	}
 	return nil
 }

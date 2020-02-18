@@ -38,15 +38,19 @@ func (b *BaseAPI) GetSocket() Socket {
 	return b.Socket
 }
 
+func (b *BaseAPI) GetPosition() Position {
+	return b.Position
+}
+
 func (b *BaseAPI) Configure(message ClientMessage) {
 	switch message.Action {
 	case ConfigurePosition, Initialize:
-		b.ConfigurePosition(message.Position)
+		b.SetPosition(message.Position)
 	}
 }
 
 // ConfigurePosition configures position
-func (b *BaseAPI) ConfigurePosition(pos Position) {
+func (b *BaseAPI) SetPosition(pos Position) {
 	b.Position = pos
 }
 

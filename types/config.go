@@ -28,5 +28,5 @@ type ClientMessage struct {
 	Action   ClientAction
 	Position Position
 	Config   json.RawMessage
-	APIName  string
+	Name     string
 }
