@@ -64,6 +64,7 @@ func NewAPI(socket types.Socket, pool types.Pool, id uuid.UUID) *API {
 
 // Configure for weather
 func (a *API) Configure(message types.ClientMessage) error {
+	defer a.Pool.Save()
 	a.BaseAPI.Configure(message)
 
 	switch message.Action {
