@@ -16,8 +16,11 @@ type ClientAction string
 
 // Types of actions
 const (
-	Configure ClientAction = "CONFIGURE"
-	Delete    ClientAction = "DELETE"
+	ConfigureAPI      ClientAction = "ConfigureAPI"
+	ConfigurePosition ClientAction = "ConfigurePosition"
+	Delete            ClientAction = "Delete"
+	ChangeAPI         ClientAction = "ChangeAPI"
+	Initialize        ClientAction = "Init"
 )
 
 // ClientMessage for configuring
@@ -25,4 +28,5 @@ type ClientMessage struct {
 	Action   ClientAction
 	Position Position
 	Config   json.RawMessage
+	Name     string
 }

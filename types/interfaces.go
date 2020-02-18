@@ -1,5 +1,7 @@
 package types
 
+import "github.com/google/uuid"
+
 // DataObject holds the data from the external API
 type DataObject interface {
 	// Build builds the data object
@@ -15,12 +17,17 @@ type API interface {
 	Configure(message ClientMessage) error
 
 	// Main loop that faciliates interaction between outside world and the client widet
-	Run(w Socket)
+	Run()
 
 	// Data gets the data to send
 	Data() interface{}
 
 	GetName() string
+	GetUUID() uuid.UUID
+	GetSocket() Socket
+	GetPosition() Position
+	SetPosition(Position)
+	Stop()
 }
 
 // Socket interface, needed to avoid circular dependency with Socket package
@@ -34,14 +41,24 @@ type Socket interface {
 	// Close the socket
 	Close() chan bool
 
+	// Configuration data
+	Config() chan ClientMessage
+
 	// SendErrorMessage sends error message
 	SendErrorMessage(string)
+}
+
+type Unregister struct {
+	API  API
+	Save bool
 }
 
 // Pool pool
 type Pool interface {
 	Start()
 	Register(API)
-	Unregister(API)
+	Unregister(Unregister)
+	Switch(API, string) error
 	Save()
+	Add(apiName string, id uuid.UUID, ws Socket) (API, error)
 }

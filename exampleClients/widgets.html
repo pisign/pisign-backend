@@ -37,7 +37,7 @@ window.addEventListener("load", function(evt) {
         var widgetInputDiv = document.createElement("div")
         var widgetInputText = document.createElement("input")
         widgetInputText.type = "text"
-        widgetInputText.value = `{"config":{"Location":"America/Chicago"}}`
+        widgetInputText.value = `{"action": "ChangeAPI", "APIName": "clock"}`
 
         widgetInputSend = document.createElement("button")
         widgetInputSend.innerHTML = "Send Message"
@@ -83,7 +83,7 @@ window.addEventListener("load", function(evt) {
         }
     }
     document.getElementById("create").onclick = function(evt) {
-        var ws = new WebSocket("ws://localhost:9000/ws?api="+apiInput.value);
+        var ws = new WebSocket("ws://localhost:9000/ws?api="+apiInput.value+"&uuid=237c6f26-1e67-4ea8-91cd-8fb8d8b46fce");
         addWidget(ws)
         return false;
     };

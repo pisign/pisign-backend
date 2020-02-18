@@ -4,19 +4,21 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
 )
 
 func Test_Configure(t *testing.T) {
-	a := NewAPI(nil, nil)
+	a := NewAPI(nil, nil, uuid.New())
 	if err := a.Configure(types.ClientMessage{}); err == nil {
 		t.Error("somehow we didn't return an error after configuring junk")
 	}
 }
 
 func Test_GetName(t *testing.T) {
-	a := NewAPI(nil, nil)
+	a := NewAPI(nil, nil, uuid.New())
 	if a.GetName() != "weather" {
 		t.Error("somehow we didn't return the name")
 	}
