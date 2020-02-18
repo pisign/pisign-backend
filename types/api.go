@@ -54,8 +54,18 @@ func (b *BaseAPI) SetPosition(pos Position) {
 	b.Position = pos
 }
 
+// Stop the api
 func (b *BaseAPI) Stop() {
 	log.Printf("Stopping api %s (%s)\n", b.Name, b.UUID)
 	b.StopChan <- true
 	log.Printf("Done stopping!\n")
+}
+
+// Send to websocket
+func (b *BaseAPI) Send(data interface{}, err error) {
+	if err != nil {
+		b.Socket.SendErrorMessage(err)
+	} else {
+		b.Socket.SendSuccess(data)
+	}
 }

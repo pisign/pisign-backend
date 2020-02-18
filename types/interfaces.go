@@ -20,7 +20,7 @@ type API interface {
 	Run()
 
 	// Data gets the data to send
-	Data() interface{}
+	Data() (interface{}, error)
 
 	GetName() string
 	GetUUID() uuid.UUID
@@ -28,6 +28,7 @@ type API interface {
 	GetPosition() Position
 	SetPosition(Position)
 	Stop()
+	Send(interface{}, error)
 }
 
 // Socket interface, needed to avoid circular dependency with Socket package
@@ -45,7 +46,9 @@ type Socket interface {
 	Config() chan ClientMessage
 
 	// SendErrorMessage sends error message
-	SendErrorMessage(string)
+	SendErrorMessage(error)
+	SendSuccess(interface{})
+	SendDataOrError(interface{}, error)
 }
 
 type Unregister struct {
