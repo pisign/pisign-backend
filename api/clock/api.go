@@ -38,6 +38,7 @@ func (a *API) loc() *time.Location {
 // Configure for clock
 func (a *API) Configure(message types.ClientMessage) error {
 	defer a.Pool.Save()
+	defer a.Socket.Send(a.Data())
 	a.BaseAPI.Configure(message)
 
 	switch message.Action {
