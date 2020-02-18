@@ -7,10 +7,10 @@ import (
 // BaseAPI base for all APIs
 type BaseAPI struct {
 	Position
-	Name       string             `json:"name"`
+	Name       string
 	ConfigChan chan ClientMessage `json:"-"`
 	Pool       Pool               `json:"-"`
-	UUID       uuid.UUID          `json:"uuid"`
+	UUID       uuid.UUID
 }
 
 // Init Initialization
