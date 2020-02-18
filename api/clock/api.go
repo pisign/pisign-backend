@@ -85,10 +85,11 @@ func (a *API) Run(w types.Socket) {
 			if err != nil {
 				w.SendErrorMessage(err.Error())
 			}
-		case d := <-w.Close():
-			if d {
-				a.Pool.Unregister(a)
-			}
+		case save := <-w.Close():
+			a.Pool.Unregister(types.Unregister{
+				API:  a,
+				Save: save,
+			})
 			return
 		case t := <-ticker.C:
 			a.time = t

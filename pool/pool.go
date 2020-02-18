@@ -9,7 +9,7 @@ import (
 // Pool holds multiple apis and handles registration and deletion
 type Pool struct {
 	registerChan   chan types.API
-	unregisterChan chan types.API
+	unregisterChan chan types.Unregister
 	Map            map[types.API]bool
 	name           string
 }
@@ -18,7 +18,7 @@ type Pool struct {
 func NewPool() *Pool {
 	return &Pool{
 		registerChan:   make(chan types.API),
-		unregisterChan: make(chan types.API),
+		unregisterChan: make(chan types.Unregister),
 		Map:            make(map[types.API]bool),
 		name:           "main",
 	}
@@ -54,10 +54,12 @@ func (pool *Pool) Start() {
 			log.Printf("New API: %s\n", api.GetName())
 			log.Println("Size of Connection Pool: ", len(pool.Map))
 			pool.Save()
-		case api := <-pool.unregisterChan:
-			delete(pool.Map, api)
-			pool.Save()
-			log.Printf("Deleted API: %s\n", api.GetName())
+		case data := <-pool.unregisterChan:
+			delete(pool.Map, data.API)
+			if data.Save {
+				pool.Save()
+			}
+			log.Printf("Deleted API: %s\n", data.API.GetName())
 			log.Println("Size of Connection Pool: ", len(pool.Map))
 		}
 	}
@@ -69,6 +71,6 @@ func (pool *Pool) Register(a types.API) {
 }
 
 // Unregister a new API
-func (pool *Pool) Unregister(a types.API) {
-	pool.unregisterChan <- a
+func (pool *Pool) Unregister(data types.Unregister) {
+	pool.unregisterChan <- data
 }

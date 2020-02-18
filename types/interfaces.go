@@ -38,10 +38,15 @@ type Socket interface {
 	SendErrorMessage(string)
 }
 
+type Unregister struct {
+	API  API
+	Save bool
+}
+
 // Pool pool
 type Pool interface {
 	Start()
 	Register(API)
-	Unregister(API)
+	Unregister(Unregister)
 	Save()
 }

@@ -83,17 +83,20 @@ func (a *API) Run(w types.Socket) {
 	defer func() {
 		ticker.Stop()
 		log.Printf("STOPPING WEATHER: %s\n", a.UUID)
-		a.Pool.Unregister(a)
 	}()
 	for {
 		select {
-		case data := <-a.ConfigChan:
-			if err := a.Configure(data); err != nil {
+		case body := <-a.ConfigChan:
+			if err := a.Configure(body); err != nil {
 				w.SendErrorMessage(err.Error())
 			} else {
 				w.Send(a.Data())
 			}
-		case <-w.Close():
+		case save := <-w.Close():
+			a.Pool.Unregister(types.Unregister{
+				API:  a,
+				Save: save,
+			})
 			return
 		case <-ticker.C:
 			w.Send(a.Data())
