@@ -57,6 +57,7 @@ func (pool *Pool) Start() {
 		case data := <-pool.unregisterChan:
 			delete(pool.Map, data.API)
 			if data.Save {
+				log.Printf("Saving API: %s\n", data.API.GetName())
 				pool.Save()
 			}
 			log.Printf("Deleted API: %s\n", data.API.GetName())
