@@ -64,8 +64,12 @@ func NewAPI(socket types.Socket, pool types.Pool, id uuid.UUID) *API {
 
 // Configure for weather
 func (a *API) Configure(message types.ClientMessage) error {
-	defer a.Pool.Save()
-	defer a.Socket.Send(a.Data())
+	defer func() {
+		if a.Pool != nil && a.Socket != nil {
+			a.Pool.Save()
+			a.Socket.Send(a.Data())
+		}
+	}()
 	a.BaseAPI.Configure(message)
 
 	switch message.Action {
@@ -77,6 +81,8 @@ func (a *API) Configure(message types.ClientMessage) error {
 		log.Println("Weather configuration successfully:", a)
 	case types.ChangeAPI:
 		a.Pool.Switch(a, message.Name)
+	default:
+		return errors.New("Invalid ClientMessage.Action")
 	}
 	return nil
 }

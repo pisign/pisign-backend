@@ -37,8 +37,12 @@ func (a *API) loc() *time.Location {
 
 // Configure for clock
 func (a *API) Configure(message types.ClientMessage) error {
-	defer a.Pool.Save()
-	defer a.Socket.Send(a.Data())
+	defer func() {
+		if a.Pool != nil && a.Socket != nil {
+			a.Pool.Save()
+			a.Socket.Send(a.Data())
+		}
+	}()
 	a.BaseAPI.Configure(message)
 
 	switch message.Action {
@@ -60,6 +64,8 @@ func (a *API) Configure(message types.ClientMessage) error {
 		log.Println("Clock configuration successful:", a)
 	case types.ChangeAPI:
 		a.Pool.Switch(a, message.Name)
+	default:
+		return errors.New("Invalid ClientMessage.Action")
 	}
 	return nil
 }
