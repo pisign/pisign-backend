@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -18,12 +20,9 @@ type API struct {
 }
 
 // NewAPI creates a new clock api
-func NewAPI(configChan chan types.ClientMessage, pool types.Pool) *API {
+func NewAPI(socket types.Socket, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("clock", configChan, pool)
-	if a.Pool != nil {
-		a.Pool.Register(a)
-	}
+	a.BaseAPI.Init("clock", socket, pool, id)
 	a.Config.Location = "Local"
 	return a
 }
@@ -37,25 +36,37 @@ func (a *API) loc() *time.Location {
 }
 
 // Configure for clock
-func (a *API) Configure(body types.ClientMessage) error {
-	a.ConfigurePosition(body.Position)
-	log.Println("Configuring CLOCK:", body)
-	oldConfig := a.Config
+func (a *API) Configure(message types.ClientMessage) error {
+	defer func() {
+		if a.Pool != nil && a.Socket != nil {
+			a.Pool.Save()
+			a.Socket.Send(a.Data())
+		}
+	}()
+	a.BaseAPI.Configure(message)
 
-	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
-		log.Println("Could not properly configure clock")
-		a.Config = oldConfig
-		return errors.New("could not properly configure clock")
+	switch message.Action {
+	case types.ConfigureAPI, types.Initialize:
+		log.Println("Configuring CLOCK:", message)
+		oldConfig := a.Config
+		if err := json.Unmarshal(message.Config, &a.Config); err != nil {
+			log.Println("Could not properly configure clock")
+			a.Config = oldConfig
+			return errors.New("could not properly configure clock")
+		}
+
+		if _, err := time.LoadLocation(a.Config.Location); err != nil {
+			log.Printf("Could not load timezone %s: %s", a.Config.Location, err)
+			a.Config.Location = oldConfig.Location // Revert to old location
+			return errors.New("could not load timezone " + a.Config.Location)
+		}
+
+		log.Println("Clock configuration successful:", a)
+	case types.ChangeAPI:
+		a.Pool.Switch(a, message.Name)
+	default:
+		return errors.New("Invalid ClientMessage.Action")
 	}
-
-	if _, err := time.LoadLocation(a.Config.Location); err != nil {
-		log.Printf("Could not load timezone %s: %s", a.Config.Location, err)
-		a.Config.Location = oldConfig.Location // Revert to old location
-		return errors.New("could not load timezone " + a.Config.Location)
-	}
-
-	log.Println("Clock configuration successful:", a)
-	a.Pool.Save()
 	return nil
 }
 
@@ -71,7 +82,7 @@ func (a *API) Data() interface{} {
 }
 
 // Run main entry point to clock API
-func (a *API) Run(w types.Socket) {
+func (a *API) Run() {
 	log.Println("Running CLOCK")
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
@@ -80,19 +91,22 @@ func (a *API) Run(w types.Socket) {
 	}()
 	for {
 		select {
-		case body := <-a.ConfigChan:
+		case body := <-a.Socket.Config():
 			err := a.Configure(body)
 			if err != nil {
-				w.SendErrorMessage(err.Error())
+				a.Socket.SendErrorMessage(err.Error())
 			}
-		case d := <-w.Close():
-			if d {
-				a.Pool.Unregister(a)
-			}
+		case <-a.StopChan:
+			return
+		case save := <-a.Socket.Close():
+			a.Pool.Unregister(types.Unregister{
+				API:  a,
+				Save: save,
+			})
 			return
 		case t := <-ticker.C:
 			a.time = t
-			w.Send(a.Data())
+			a.Socket.Send(a.Data())
 		}
 	}
 }

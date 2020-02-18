@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -54,49 +55,64 @@ func (a *API) Data() interface{} {
 }
 
 // NewAPI creates a new weather api for a client
-func NewAPI(configChan chan types.ClientMessage, pool types.Pool) *API {
+func NewAPI(socket types.Socket, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("weather", configChan, pool)
-	if a.Pool != nil {
-		a.Pool.Register(a)
-	}
+	a.BaseAPI.Init("weather", socket, pool, id)
 	a.ValidCache = false
 	return a
 }
 
 // Configure for weather
-func (a *API) Configure(body types.ClientMessage) error {
-	a.ConfigurePosition(body.Position)
-	log.Println("Configuring WEATHER:", body)
+func (a *API) Configure(message types.ClientMessage) error {
+	defer func() {
+		if a.Pool != nil && a.Socket != nil {
+			a.Pool.Save()
+			a.Socket.Send(a.Data())
+		}
+	}()
+	a.BaseAPI.Configure(message)
 
-	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
-		return errors.New("could not properly configure weather")
+	switch message.Action {
+	case types.ConfigureAPI, types.Initialize:
+		log.Println("Configuring WEATHER:", message)
+		if err := json.Unmarshal(message.Config, &a.Config); err != nil {
+			return errors.New("could not properly configure weather")
+		}
+		log.Println("Weather configuration successfully:", a)
+	case types.ChangeAPI:
+		a.Pool.Switch(a, message.Name)
+	default:
+		return errors.New("Invalid ClientMessage.Action")
 	}
-	log.Println("Weather configuration successfully:", a)
 	return nil
 }
 
 // Run main entry point to weather API
-func (a *API) Run(w types.Socket) {
+func (a *API) Run() {
 	log.Println("Running WEATHER")
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
 		log.Printf("STOPPING WEATHER: %s\n", a.UUID)
-		a.Pool.Unregister(a)
 	}()
 	for {
 		select {
-		case data := <-a.ConfigChan:
-			if err := a.Configure(data); err != nil {
-				w.SendErrorMessage(err.Error())
+		case body := <-a.Socket.Config():
+			if err := a.Configure(body); err != nil {
+				a.Socket.SendErrorMessage(err.Error())
 			} else {
-				w.Send(a.Data())
+				a.Socket.Send(a.Data())
 			}
-		case <-w.Close():
+		case <-a.StopChan:
+			return
+		case save := <-a.Socket.Close():
+			a.Pool.Unregister(types.Unregister{
+				API:  a,
+				Save: save,
+			})
 			return
 		case <-ticker.C:
-			w.Send(a.Data())
+			a.Socket.Send(a.Data())
 		}
 	}
 }

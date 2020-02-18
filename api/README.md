@@ -44,6 +44,10 @@ func (a *API) Configure(body types.ClientMessage) {
     // Also call parent Configure first
 	a.ConfigurePosition(body.Position)
 
+	if len(body.Config) == 0 {
+		return
+	}
+
     // Catch error if object can not be configured properly
 	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
 		log.Println("Could not properly configure clock")
@@ -79,8 +83,12 @@ func (a *API) Run(w types.Socket) {
 		select {
 		case body := <-a.ConfigChan: // Configuration message received
 			a.Configure(body)
-		case <-w.Close(): // Socket connection was closed, stop running
-			return
+		case save := <-w.Close(): // Socket connection was closed, stop running
+			a.Pool.Unregister(types.Unregister{
+				API:  a,
+				Save: save,
+			})			
+            return
 		case <- ticker.C:
 			// Do any necessary pre-processing logic
 			w.Send(a.Data()) // Send data to client through websocket

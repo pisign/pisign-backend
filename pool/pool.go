@@ -3,13 +3,16 @@ package pool
 import (
 	"log"
 
+	"github.com/google/uuid"
+	"github.com/pisign/pisign-backend/api"
+
 	"github.com/pisign/pisign-backend/types"
 )
 
 // Pool holds multiple apis and handles registration and deletion
 type Pool struct {
 	registerChan   chan types.API
-	unregisterChan chan types.API
+	unregisterChan chan types.Unregister
 	Map            map[types.API]bool
 	name           string
 }
@@ -18,7 +21,7 @@ type Pool struct {
 func NewPool() *Pool {
 	return &Pool{
 		registerChan:   make(chan types.API),
-		unregisterChan: make(chan types.API),
+		unregisterChan: make(chan types.Unregister),
 		Map:            make(map[types.API]bool),
 		name:           "main",
 	}
@@ -49,18 +52,32 @@ func (pool *Pool) Save() {
 func (pool *Pool) Start() {
 	for {
 		select {
-		case api := <-pool.registerChan:
-			pool.Map[api] = true
-			log.Printf("New API: %s\n", api.GetName())
+		case a := <-pool.registerChan:
+			pool.Map[a] = true
+			log.Printf("New API: %s\n", a.GetName())
 			log.Println("Size of Connection Pool: ", len(pool.Map))
 			pool.Save()
-		case api := <-pool.unregisterChan:
-			delete(pool.Map, api)
-			pool.Save()
-			log.Printf("Deleted API: %s\n", api.GetName())
+		case data := <-pool.unregisterChan:
+			delete(pool.Map, data.API)
+			if data.Save {
+				log.Printf("Saving API: %s\n", data.API.GetName())
+				pool.Save()
+			}
+			log.Printf("Deleted API: %s\n", data.API.GetName())
 			log.Println("Size of Connection Pool: ", len(pool.Map))
 		}
 	}
+}
+
+func (pool *Pool) Add(apiName string, id uuid.UUID, ws types.Socket) (types.API, error) {
+	a, err := api.NewAPI(apiName, ws, pool, id)
+	if err != nil {
+		return nil, err
+	}
+	pool.Register(a)
+
+	go a.Run()
+	return a, nil
 }
 
 // Register a new API
@@ -69,6 +86,20 @@ func (pool *Pool) Register(a types.API) {
 }
 
 // Unregister a new API
-func (pool *Pool) Unregister(a types.API) {
-	pool.unregisterChan <- a
+func (pool *Pool) Unregister(data types.Unregister) {
+	pool.unregisterChan <- data
+}
+
+func (pool *Pool) Switch(a types.API, name string) error {
+	ws := a.GetSocket()
+	id := a.GetUUID()
+	pos := a.GetPosition()
+	a.Stop()
+	pool.Unregister(types.Unregister{API: a, Save: true})
+	a, err := pool.Add(name, id, ws)
+	if err != nil {
+		return err
+	}
+	a.SetPosition(pos)
+	return nil
 }
