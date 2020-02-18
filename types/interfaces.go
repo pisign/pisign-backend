@@ -24,6 +24,7 @@ type API interface {
 
 	GetName() string
 	GetUUID() uuid.UUID
+	SetUUID(uuid.UUID)
 }
 
 // Socket interface, needed to avoid circular dependency with Socket package

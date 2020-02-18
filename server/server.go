@@ -10,6 +10,8 @@ import (
 	"log"
 	"net/http"
 
+	uuid "github.com/google/uuid"
+
 	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/pool"
 	"github.com/pisign/pisign-backend/types"
@@ -28,6 +30,7 @@ func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Req
 	configChan := make(chan types.ClientMessage)
 
 	apiName := r.FormValue("api")
+	idString := r.FormValue("uuid")
 
 	a, err := api.NewAPI(apiName, configChan, pool)
 	if err != nil {
@@ -35,6 +38,9 @@ func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Req
 		conn.Close()
 		return
 	}
+	id := uuid.MustParse(idString)
+	a.SetUUID(id)
+	pool.Register(a)
 
 	socket := socket.Create(configChan, conn)
 

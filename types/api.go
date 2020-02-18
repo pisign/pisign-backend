@@ -18,7 +18,6 @@ func (b *BaseAPI) Init(name string, configChan chan ClientMessage, pool Pool) {
 	b.Name = name
 	b.ConfigChan = configChan
 	b.Pool = pool
-	b.UUID = uuid.New()
 }
 
 // GetName returns the name (or type) of the api
@@ -28,6 +27,10 @@ func (b *BaseAPI) GetName() string {
 
 func (b *BaseAPI) GetUUID() uuid.UUID {
 	return b.UUID
+}
+
+func (b *BaseAPI) SetUUID(id uuid.UUID) {
+	b.UUID = id
 }
 
 // ConfigurePosition configures position

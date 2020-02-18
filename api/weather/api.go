@@ -57,9 +57,6 @@ func (a *API) Data() interface{} {
 func NewAPI(configChan chan types.ClientMessage, pool types.Pool) *API {
 	a := new(API)
 	a.BaseAPI.Init("weather", configChan, pool)
-	if a.Pool != nil {
-		a.Pool.Register(a)
-	}
 	a.ValidCache = false
 	return a
 }

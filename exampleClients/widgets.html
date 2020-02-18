@@ -83,7 +83,7 @@ window.addEventListener("load", function(evt) {
         }
     }
     document.getElementById("create").onclick = function(evt) {
-        var ws = new WebSocket("ws://localhost:9000/ws?api="+apiInput.value);
+        var ws = new WebSocket("ws://localhost:9000/ws?api="+apiInput.value+"&uuid=237c6f26-1e67-4ea8-91cd-8fb8d8b46fce");
         addWidget(ws)
         return false;
     };
