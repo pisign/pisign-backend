@@ -48,9 +48,9 @@ type Socket interface {
 	// SendErrorMessage sends error message
 	SendErrorMessage(error)
 	SendSuccess(interface{})
-	SendDataOrError(interface{}, error)
 }
 
+// Unregister stores info about which api to unregister, and weather the pool should be saved
 type Unregister struct {
 	API  API
 	Save bool
