@@ -30,18 +30,22 @@ func (b *BaseAPI) GetName() string {
 	return b.Name
 }
 
+// GetUUID returns the uuid
 func (b *BaseAPI) GetUUID() uuid.UUID {
 	return b.UUID
 }
 
+// GetSocket returns the apis socket connection
 func (b *BaseAPI) GetSocket() Socket {
 	return b.Socket
 }
 
+// GetPosition returns position
 func (b *BaseAPI) GetPosition() Position {
 	return b.Position
 }
 
+// Configure based on an incoming client message
 func (b *BaseAPI) Configure(message ClientMessage) {
 	switch message.Action {
 	case ConfigurePosition, Initialize:
@@ -49,7 +53,7 @@ func (b *BaseAPI) Configure(message ClientMessage) {
 	}
 }
 
-// ConfigurePosition configures position
+// SetPosition configures position
 func (b *BaseAPI) SetPosition(pos Position) {
 	b.Position = pos
 }

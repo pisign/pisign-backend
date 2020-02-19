@@ -1,7 +1,9 @@
 package types
 
+// MessageStatus indicates the broad type of message sent back to the client
 type MessageStatus string
 
+// Enumerates different possible message statuses
 const (
 	StatusSuccess MessageStatus = "success"
 	StatusFailure MessageStatus = "failure"

@@ -79,15 +79,6 @@ func (w *Socket) SendErrorMessage(err error) {
 	})
 }
 
-// SendDataOrError sends the appropriate data or error
-func (w *Socket) SendDataOrError(data interface{}, err error) {
-	if err != nil {
-		w.SendErrorMessage(err)
-	} else {
-		w.SendSuccess(data)
-	}
-}
-
 // Send out to client through websocket
 func (w *Socket) Send(msg interface{}) {
 	w.Conn.WriteJSON(msg)
