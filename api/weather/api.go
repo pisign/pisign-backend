@@ -23,12 +23,12 @@ type API struct {
 }
 
 // Data gets the data to send to the websocket
-func (a *API) Data() interface{} {
+func (a *API) Data() (interface{}, error) {
 	// Data should handle how to retrieve the data
 	if time.Now().Sub(a.LastCalled) < (time.Second*10) && a.ValidCache {
 		// Send the old response object
 		log.Println("using cached value")
-		return &a.ResponseObject
+		return &a.ResponseObject, nil
 	}
 
 	// Otherwise, update the response object
@@ -39,10 +39,8 @@ func (a *API) Data() interface{} {
 	// TODO possibly delete the ResponseObject before doing this
 	// so that the data is all 0'ed?
 	if err != nil {
-		a.ResponseObject.Status = types.StatusFailure
-		a.ResponseObject.ErrorMessage = err.Error()
 		a.ValidCache = false
-		return &a.ResponseObject
+		return nil, err
 	}
 
 	a.ResponseObject.Status = types.StatusSuccess
@@ -51,7 +49,7 @@ func (a *API) Data() interface{} {
 	a.ResponseObject = *(response.(*types.WeatherResponse))
 	a.LastCalled = time.Now()
 	a.ValidCache = true
-	return &a.ResponseObject
+	return &a.ResponseObject, nil
 }
 
 // NewAPI creates a new weather api for a client
@@ -67,7 +65,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 	defer func() {
 		if a.Pool != nil && a.Socket != nil {
 			a.Pool.Save()
-			a.Socket.Send(a.Data())
+			a.Send(a.Data())
 		}
 	}()
 	a.BaseAPI.Configure(message)
@@ -90,6 +88,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 // Run main entry point to weather API
 func (a *API) Run() {
 	log.Println("Running WEATHER")
+	a.Send(a.Data())
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
@@ -99,9 +98,9 @@ func (a *API) Run() {
 		select {
 		case body := <-a.Socket.Config():
 			if err := a.Configure(body); err != nil {
-				a.Socket.SendErrorMessage(err.Error())
+				a.Socket.SendErrorMessage(err)
 			} else {
-				a.Socket.Send(a.Data())
+				a.Send(a.Data())
 			}
 		case <-a.StopChan:
 			return
@@ -112,7 +111,7 @@ func (a *API) Run() {
 			})
 			return
 		case <-ticker.C:
-			a.Socket.Send(a.Data())
+			a.Send(a.Data())
 		}
 	}
 }

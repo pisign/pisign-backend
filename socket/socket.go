@@ -31,14 +31,6 @@ func Create(configChan chan types.ClientMessage, conn *websocket.Conn) *Socket {
 	return socket
 }
 
-// SendErrorMessage sends the error message
-func (w *Socket) SendErrorMessage(message string) {
-	w.Send(types.BaseMessage{
-		Status:       types.StatusFailure,
-		ErrorMessage: message,
-	})
-}
-
 func (w *Socket) Read() {
 	// The only time the socket is recieving data is when it is getting configutation data
 	defer func() {
@@ -69,6 +61,22 @@ func (w *Socket) Read() {
 			log.Printf("Unknown client action: %s\n", message.Action)
 		}
 	}
+}
+
+// SendSuccess sends a success message
+func (w *Socket) SendSuccess(msg interface{}) {
+	w.Send(types.BaseMessage{
+		Status: types.StatusSuccess,
+		Data:   msg,
+	})
+}
+
+// SendErrorMessage sends the error message
+func (w *Socket) SendErrorMessage(err error) {
+	w.Send(types.BaseMessage{
+		Status: types.StatusFailure,
+		Error:  err.Error(),
+	})
 }
 
 // Send out to client through websocket

@@ -40,7 +40,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 	defer func() {
 		if a.Pool != nil && a.Socket != nil {
 			a.Pool.Save()
-			a.Socket.Send(a.Data())
+			a.Send(a.Data())
 		}
 	}()
 	a.BaseAPI.Configure(message)
@@ -71,19 +71,16 @@ func (a *API) Configure(message types.ClientMessage) error {
 }
 
 // Data gets the current time!
-func (a *API) Data() interface{} {
+func (a *API) Data() (interface{}, error) {
 	return types.ClockResponse{
 		Time: a.time.In(a.loc()).String(),
-		BaseMessage: types.BaseMessage{
-			Status:       types.StatusSuccess,
-			ErrorMessage: "",
-		},
-	}
+	}, nil
 }
 
 // Run main entry point to clock API
 func (a *API) Run() {
 	log.Println("Running CLOCK")
+	a.Send(a.Data())
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
 		ticker.Stop()
@@ -94,7 +91,7 @@ func (a *API) Run() {
 		case body := <-a.Socket.Config():
 			err := a.Configure(body)
 			if err != nil {
-				a.Socket.SendErrorMessage(err.Error())
+				a.Socket.SendErrorMessage(err)
 			}
 		case <-a.StopChan:
 			return
@@ -106,7 +103,7 @@ func (a *API) Run() {
 			return
 		case t := <-ticker.C:
 			a.time = t
-			a.Socket.Send(a.Data())
+			a.Send(a.Data())
 		}
 	}
 }
