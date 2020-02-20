@@ -83,15 +83,24 @@ func (o *OpenWeatherResponse) Update(arguments interface{}) error {
 	}
 
 	url := buildurl(zipcode, apikey)
-	resp := utils.GetAPIData(url)
+	resp, err := utils.GetAPIData(url)
+	if err != nil {
+		return err
+	}
 
 	defer func() {
 		utils.WrapError(resp.Body.Close())
 	}()
 
-	body := utils.ParseResponse(resp)
-	err := utils.ParseJSON(body, &o)
-	utils.WrapError(err)
+	body, err := utils.ParseResponse(resp)
+	if err != nil {
+		return err
+	}
+
+	err = utils.ParseJSON(body, &o)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
