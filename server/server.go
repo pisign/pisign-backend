@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 
-	uuid "github.com/google/uuid"
+	"github.com/google/uuid"
 
 	"github.com/pisign/pisign-backend/pool"
 	"github.com/pisign/pisign-backend/types"

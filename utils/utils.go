@@ -16,23 +16,23 @@ import (
  */
 
 // GetAPIData wraps the get request
-func GetAPIData(url string) *http.Response {
+func GetAPIData(url string) (*http.Response, error) {
 	resp, err := http.Get(url)
 	// TODO more elegant error handling
 	if err != nil {
-		panic("error in GET request")
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // ParseResponse wraps ioutil.Readall
-func ParseResponse(resp *http.Response) []byte {
+func ParseResponse(resp *http.Response) ([]byte, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	// TODO more elegant error handling
 	if err != nil {
-		panic("error in reading API response")
+		return nil, err
 	}
-	return body
+	return body, nil
 }
 
 // ParseJSON parses byte slice body into struct i
