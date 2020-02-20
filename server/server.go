@@ -33,8 +33,10 @@ func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Req
 	id := uuid.MustParse(idString)
 
 	ws := socket.Create(configChan, conn)
+	sockets := make(map[types.Socket]bool)
+	sockets[ws] = true
 
-	_, err = pool.Add(apiName, id, ws)
+	_, err = pool.Add(apiName, id, sockets)
 	if err != nil {
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		conn.Close()

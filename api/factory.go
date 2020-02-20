@@ -17,12 +17,12 @@ type InvalidAPIError struct {
 }
 
 // NewAPI returns a new instance of a specific API based on the name
-func NewAPI(name string, socket types.Socket, pool types.Pool, id uuid.UUID) (types.API, error) {
+func NewAPI(name string, sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) (types.API, error) {
 	switch name {
 	case "weather":
-		return weather.NewAPI(socket, pool, id), nil
+		return weather.NewAPI(sockets, pool, id), nil
 	case "clock":
-		return clock.NewAPI(socket, pool, id), nil
+		return clock.NewAPI(sockets, pool, id), nil
 	default:
 		return nil, InvalidAPIError{name}
 	}
