@@ -54,11 +54,11 @@ type Sys {
 
 type BaseMessage {
     Status       MessageStatus
-    ErrorMessage string
+    Error        string
+    Data         interface {}
 }
 
 type ClockResponse {
-    BaseMessage  BaseMessage
-    Time         string
+    Time         int64
 }
 
