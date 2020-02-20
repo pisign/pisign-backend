@@ -69,8 +69,22 @@ func (pool *Pool) Start() {
 	}
 }
 
-func (pool *Pool) Add(apiName string, id uuid.UUID, ws types.Socket) (types.API, error) {
-	a, err := api.NewAPI(apiName, ws, pool, id)
+// Add a new API to the pool
+func (pool *Pool) Add(apiName string, id uuid.UUID, sockets map[types.Socket]bool) (types.API, error) {
+	log.Printf("Adding new api: %s\n", id)
+	if a := pool.containsUUID(id); a != nil {
+		// Add new socket to existing api
+		log.Printf("API (%s) Already exists!\n", id)
+		for socket := range sockets {
+			a.AddSocket(socket)
+		}
+
+		return a, nil
+	}
+
+	// Else Spin up a new api
+	log.Printf("API (%s) Being created now!\n", id)
+	a, err := api.NewAPI(apiName, sockets, pool, id)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +92,7 @@ func (pool *Pool) Add(apiName string, id uuid.UUID, ws types.Socket) (types.API,
 
 	go a.Run()
 	return a, nil
+
 }
 
 // Register a new API
@@ -90,16 +105,26 @@ func (pool *Pool) Unregister(data types.Unregister) {
 	pool.unregisterChan <- data
 }
 
+// Switch from one API type to another, while maintaining the same socket
 func (pool *Pool) Switch(a types.API, name string) error {
-	ws := a.GetSocket()
+	sockets := a.GetSockets()
 	id := a.GetUUID()
 	pos := a.GetPosition()
 	a.Stop()
 	pool.Unregister(types.Unregister{API: a, Save: true})
-	a, err := pool.Add(name, id, ws)
+	a, err := pool.Add(name, id, sockets)
 	if err != nil {
 		return err
 	}
 	a.SetPosition(pos)
+	return nil
+}
+
+func (pool *Pool) containsUUID(targetUUID uuid.UUID) types.API {
+	for a := range pool.Map {
+		if a.GetUUID() == targetUUID {
+			return a
+		}
+	}
 	return nil
 }

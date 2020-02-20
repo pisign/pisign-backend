@@ -20,9 +20,9 @@ type API struct {
 }
 
 // NewAPI creates a new clock api
-func NewAPI(socket types.Socket, pool types.Pool, id uuid.UUID) *API {
+func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("clock", socket, pool, id)
+	a.BaseAPI.Init("clock", sockets, pool, id)
 	a.Config.Location = "Local"
 	return a
 }
@@ -38,7 +38,7 @@ func (a *API) loc() *time.Location {
 // Configure for clock
 func (a *API) Configure(message types.ClientMessage) error {
 	defer func() {
-		if a.Pool != nil && a.Socket != nil {
+		if a.Pool != nil && a.Sockets != nil {
 			a.Pool.Save()
 			a.Send(a.Data())
 		}
@@ -88,18 +88,22 @@ func (a *API) Run() {
 	}()
 	for {
 		select {
-		case body := <-a.Socket.Config():
+		case body := <-a.ConfigChan:
 			err := a.Configure(body)
 			if err != nil {
-				a.Socket.SendErrorMessage(err)
+				a.Send(nil, err)
 			}
-		case <-a.StopChan:
-			return
-		case save := <-a.Socket.Close():
-			a.Pool.Unregister(types.Unregister{
-				API:  a,
-				Save: save,
-			})
+		case msg := <-a.CloseChan:
+			if msg.Socket == nil || len(a.Sockets) <= 1 {
+				a.StopAll(msg.Save)
+				a.Pool.Unregister(types.Unregister{
+					API:  a,
+					Save: msg.Save,
+				})
+			} else {
+				delete(a.Sockets, msg.Socket)
+				msg.Socket.Close()
+			}
 			return
 		case t := <-ticker.C:
 			a.time = t

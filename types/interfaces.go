@@ -24,11 +24,13 @@ type API interface {
 
 	GetName() string
 	GetUUID() uuid.UUID
-	GetSocket() Socket
+	GetSockets() map[Socket]bool
 	GetPosition() Position
 	SetPosition(Position)
 	Stop()
 	Send(interface{}, error)
+
+	AddSocket(Socket)
 }
 
 // Socket interface, needed to avoid circular dependency with Socket package
@@ -63,5 +65,5 @@ type Pool interface {
 	Unregister(Unregister)
 	Switch(API, string) error
 	Save()
-	Add(apiName string, id uuid.UUID, ws Socket) (API, error)
+	Add(string, uuid.UUID, map[Socket]bool) (API, error)
 }
