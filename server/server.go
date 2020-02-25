@@ -73,7 +73,6 @@ func serveLayouts(w http.ResponseWriter, r *http.Request) {
 
 func setupRoutes() {
 	p := pool.NewPool()
-	go p.Start()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		socketConnectionHandler(p, w, r)
 	})

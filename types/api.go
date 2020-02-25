@@ -8,8 +8,8 @@ import (
 
 // CloseType represents when a socket closes, or a forceful close if Socket is nil
 type CloseType struct {
-	Socket Socket
-	Save   bool
+	Sockets map[Socket]bool
+	Save    bool
 }
 
 // BaseAPI base for all APIs
@@ -21,17 +21,22 @@ type BaseAPI struct {
 	Pool       Pool               `json:"-"`
 	CloseChan  chan CloseType     `json:"-"`
 	ConfigChan chan ClientMessage `json:"-"`
+	running    bool
 }
 
 // Init Initialization
 func (b *BaseAPI) Init(name string, sockets map[Socket]bool, pool Pool, id uuid.UUID) {
 	b.Name = name
-	b.Sockets = sockets
+	b.Sockets = make(map[Socket]bool)
+	for socket := range sockets {
+		b.AddSocket(socket)
+	}
 	b.Pool = pool
 	b.UUID = id
 	// TODO Remove arbitrary magic numbers?
 	b.CloseChan = make(chan CloseType, 10)
 	b.ConfigChan = make(chan ClientMessage, 10)
+	b.running = true
 }
 
 // GetName returns the name (or type) of the api
@@ -55,11 +60,45 @@ func (b *BaseAPI) GetPosition() Position {
 }
 
 // Configure based on an incoming client message
-func (b *BaseAPI) Configure(message ClientMessage) {
+func (b *BaseAPI) Configure(message ClientMessage) error {
 	switch message.Action {
 	case ConfigurePosition, Initialize:
 		b.SetPosition(message.Position)
+	case ChangeAPI:
+		return b.Pool.Switch(b, message.Name)
+	case Delete:
+		b.CloseChan <- CloseType{Sockets: b.Sockets, Save: true}
 	}
+	return nil
+}
+
+func (b *BaseAPI) Run() {
+	defer func() {
+		log.Printf("STOPPING BASE API: %s\n", b.UUID)
+	}()
+	for b.Running() {
+		select {
+		case msg := <-b.CloseChan:
+			log.Printf("Closing sockets: %v\n", msg.Sockets)
+			for socket := range msg.Sockets {
+				socket.Close()
+				delete(b.Sockets, socket)
+			}
+			if len(b.Sockets) == 0 {
+				b.Stop()
+				b.Pool.Unregister(Unregister{
+					API:  b,
+					Save: msg.Save,
+				})
+			}
+		default:
+			continue
+		}
+	}
+}
+
+func (b *BaseAPI) Data() (interface{}, error) {
+	return nil, nil
 }
 
 // SetPosition configures position
@@ -70,19 +109,15 @@ func (b *BaseAPI) SetPosition(pos Position) {
 // Stop the api
 func (b *BaseAPI) Stop() {
 	log.Printf("Stopping api %s (%s)\n", b.Name, b.UUID)
-	b.CloseChan <- CloseType{Socket: nil, Save: true}
-	log.Printf("Done stopping!\n")
-}
-
-// StopAll force stops the whole api
-func (b *BaseAPI) StopAll(save bool) {
-	for socket := range b.Sockets {
-		socket.Close()
-	}
+	b.running = false
 }
 
 // Send to websocket
 func (b *BaseAPI) Send(data interface{}, err error) {
+	// If API has already been closed
+	if !b.Running() {
+		return
+	}
 	if err != nil {
 		for socket := range b.Sockets {
 			socket.SendErrorMessage(err)
@@ -97,18 +132,28 @@ func (b *BaseAPI) Send(data interface{}, err error) {
 // AddSocket to the api's internal socket list
 func (b *BaseAPI) AddSocket(socket Socket) {
 	if _, ok := b.Sockets[socket]; !ok {
+		log.Printf("Adding new socket: %v!\n", socket)
 		b.Sockets[socket] = true
 		go func(config chan ClientMessage, close chan bool) {
 			defer func() {
 				log.Printf("Exiting channel forwarding for socket!\n")
 			}()
-			for msg := range config {
-				b.ConfigChan <- msg
+			for b.Running() {
+				select {
+				case msg := <-config:
+					b.ConfigChan <- msg
+				case save := <-close:
+					sockets := make(map[Socket]bool)
+					sockets[socket] = true
+					b.CloseChan <- CloseType{Sockets: sockets, Save: save}
+				default:
+					continue
+				}
 			}
-			for save := range close {
-				b.CloseChan <- CloseType{Socket: socket, Save: save}
-				return
-			}
-		}(socket.Config(), socket.Close())
+		}(socket.ConfigChan(), socket.CloseChan())
 	}
+}
+
+func (b *BaseAPI) Running() bool {
+	return b.running
 }

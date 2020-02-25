@@ -68,7 +68,9 @@ func (a *API) Configure(message types.ClientMessage) error {
 			a.Send(a.Data())
 		}
 	}()
-	a.BaseAPI.Configure(message)
+	if err := a.BaseAPI.Configure(message); err != nil {
+		return err
+	}
 
 	switch message.Action {
 	case types.ConfigureAPI, types.Initialize:
@@ -77,10 +79,6 @@ func (a *API) Configure(message types.ClientMessage) error {
 			return errors.New("could not properly configure weather")
 		}
 		log.Println("Weather configuration successfully:", a)
-	case types.ChangeAPI:
-		a.Pool.Switch(a, message.Name)
-	default:
-		return errors.New("Invalid ClientMessage.Action")
 	}
 	return nil
 }
@@ -88,33 +86,24 @@ func (a *API) Configure(message types.ClientMessage) error {
 // Run main entry point to weather API
 func (a *API) Run() {
 	log.Println("Running WEATHER")
+	go a.BaseAPI.Run()
 	a.Send(a.Data())
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
 		log.Printf("STOPPING WEATHER: %s\n", a.UUID)
 	}()
-	for {
+	for a.Running() {
 		select {
 		case body := <-a.ConfigChan:
 			err := a.Configure(body)
 			if err != nil {
 				a.Send(nil, err)
 			}
-		case msg := <-a.CloseChan:
-			if msg.Socket == nil || len(a.Sockets) <= 1 {
-				a.StopAll(msg.Save)
-				a.Pool.Unregister(types.Unregister{
-					API:  a,
-					Save: msg.Save,
-				})
-			} else {
-				delete(a.Sockets, msg.Socket)
-				msg.Socket.Close()
-			}
-			return
 		case <-ticker.C:
 			a.Send(a.Data())
+		default:
+			continue
 		}
 	}
 }

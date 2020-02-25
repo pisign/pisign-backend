@@ -3,8 +3,8 @@
 package socket
 
 import (
-	"encoding/json"
 	"log"
+	"net"
 
 	"github.com/pisign/pisign-backend/types"
 	"github.com/pisign/pisign-backend/utils"
@@ -14,18 +14,17 @@ import (
 
 // Socket struct for a single frontend Socket
 type Socket struct {
-	Conn       *websocket.Conn          `json:"-"`
-	CloseChan  chan bool                `json:"-"`
-	ConfigChan chan types.ClientMessage `json:"-"`
-	DeleteChan chan bool                `json:"-"`
+	conn       *websocket.Conn
+	closeChan  chan bool
+	configChan chan types.ClientMessage
 }
 
 // Create creates a new Socket, with a valid api attached
 func Create(configChan chan types.ClientMessage, conn *websocket.Conn) *Socket {
 	socket := &Socket{
-		Conn:       conn,
-		CloseChan:  make(chan bool),
-		ConfigChan: configChan,
+		conn:       conn,
+		closeChan:  make(chan bool),
+		configChan: configChan,
 	}
 
 	return socket
@@ -38,10 +37,10 @@ func (w *Socket) Read() {
 	}()
 
 	for {
-		_, p, err := w.Conn.ReadMessage()
+		_, p, err := w.conn.ReadMessage()
 		if err != nil {
-			log.Println("Read->w.Conn.ReadMessage", err)
-			w.CloseChan <- false
+			log.Println("Read->w.conn.ReadMessage", err)
+			w.closeChan <- false
 			return
 		}
 
@@ -52,11 +51,8 @@ func (w *Socket) Read() {
 		}
 
 		switch message.Action {
-		case types.Initialize, types.ConfigurePosition, types.ConfigureAPI, types.ChangeAPI:
-			w.ConfigChan <- message
-		case types.Delete:
-			w.CloseChan <- true
-			return
+		case types.Initialize, types.ConfigurePosition, types.ConfigureAPI, types.ChangeAPI, types.Delete:
+			w.configChan <- message
 		default:
 			log.Printf("Unknown client action: %s\n", message.Action)
 		}
@@ -81,20 +77,24 @@ func (w *Socket) SendErrorMessage(err error) {
 
 // Send out to client through websocket
 func (w *Socket) Send(msg interface{}) {
-	w.Conn.WriteJSON(msg)
+	if err := w.conn.WriteJSON(msg); err != nil {
+		log.Printf("Error sending JSON to client: %v\n", err)
+	}
 }
 
-// Close returns a channel that signifies the closing of the Socket
-func (w *Socket) Close() chan bool {
-	return w.CloseChan
+func (w *Socket) CloseChan() chan bool {
+	return w.closeChan
 }
 
-// Config for api and position configuration
-func (w *Socket) Config() chan types.ClientMessage {
-	return w.ConfigChan
+func (w *Socket) ConfigChan() chan types.ClientMessage {
+	return w.configChan
 }
 
-func (w *Socket) String() string {
-	str, _ := json.Marshal(w)
-	return string(str)
+// Closes the underlying websocket connection
+func (w *Socket) Close() error {
+	return w.conn.Close()
+}
+
+func (w *Socket) RemoteAddr() net.Addr {
+	return w.conn.RemoteAddr()
 }
