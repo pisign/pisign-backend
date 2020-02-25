@@ -1,6 +1,10 @@
 package types
 
-import "github.com/google/uuid"
+import (
+	"net"
+
+	"github.com/google/uuid"
+)
 
 // DataObject holds the data from the external API
 type DataObject interface {
@@ -28,6 +32,7 @@ type API interface {
 	GetPosition() Position
 	SetPosition(Position)
 	Stop()
+	Running() bool
 	Send(interface{}, error)
 
 	AddSocket(Socket)
@@ -41,15 +46,16 @@ type Socket interface {
 	// Send information to the client
 	Send(interface{})
 
-	// Close the socket
-	Close() chan bool
-
-	// Configuration data
-	Config() chan ClientMessage
+	CloseChan() chan bool
+	ConfigChan() chan ClientMessage
 
 	// SendErrorMessage sends error message
 	SendErrorMessage(error)
 	SendSuccess(interface{})
+
+	// Wrappers around underlying websocket connection
+	Close() error
+	RemoteAddr() net.Addr
 }
 
 // Unregister stores info about which api to unregister, and weather the pool should be saved
@@ -60,7 +66,6 @@ type Unregister struct {
 
 // Pool pool
 type Pool interface {
-	Start()
 	Register(API)
 	Unregister(Unregister)
 	Switch(API, string) error

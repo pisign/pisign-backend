@@ -43,7 +43,9 @@ func (a *API) Configure(message types.ClientMessage) error {
 			a.Send(a.Data())
 		}
 	}()
-	a.BaseAPI.Configure(message)
+	if err := a.BaseAPI.Configure(message); err != nil {
+		return err
+	}
 
 	switch message.Action {
 	case types.ConfigureAPI, types.Initialize:
@@ -62,10 +64,6 @@ func (a *API) Configure(message types.ClientMessage) error {
 		}
 
 		log.Println("Clock configuration successful:", a)
-	case types.ChangeAPI:
-		a.Pool.Switch(a, message.Name)
-	default:
-		return errors.New("Invalid ClientMessage.Action")
 	}
 	return nil
 }
@@ -79,6 +77,7 @@ func (a *API) Data() (interface{}, error) {
 
 // Run main entry point to clock API
 func (a *API) Run() {
+	go a.BaseAPI.Run()
 	log.Println("Running CLOCK")
 	a.Send(a.Data())
 	ticker := time.NewTicker(1 * time.Second)
@@ -86,28 +85,29 @@ func (a *API) Run() {
 		ticker.Stop()
 		log.Printf("STOPPING CLOCK: %s\n", a.UUID)
 	}()
-	for {
+	for a.Running() {
 		select {
 		case body := <-a.ConfigChan:
-			err := a.Configure(body)
-			if err != nil {
+			if err := a.Configure(body); err != nil {
 				a.Send(nil, err)
 			}
 		case msg := <-a.CloseChan:
-			if msg.Socket == nil || len(a.Sockets) <= 1 {
-				a.StopAll(msg.Save)
+			for socket := range msg.Sockets {
+				delete(a.Sockets, socket)
+				socket.Close()
+			}
+			if len(a.Sockets) == 0 {
+				a.Stop()
 				a.Pool.Unregister(types.Unregister{
 					API:  a,
 					Save: msg.Save,
 				})
-			} else {
-				delete(a.Sockets, msg.Socket)
-				msg.Socket.Close()
 			}
-			return
 		case t := <-ticker.C:
 			a.time = t
 			a.Send(a.Data())
+		default:
+			continue
 		}
 	}
 }
