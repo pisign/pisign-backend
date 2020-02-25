@@ -20,3 +20,4 @@ coverage.txt
 # static files
 /dist
 main
+assets/
