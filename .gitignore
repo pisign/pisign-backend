@@ -16,3 +16,7 @@
 
 coverage.txt
 *.json
+
+# static files
+/dist
+main
