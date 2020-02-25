@@ -121,10 +121,8 @@ func (pool *Pool) Switch(a types.API, name string) error {
 }
 
 func (pool *Pool) containsUUID(targetUUID uuid.UUID) types.API {
-	for id, a := range pool.Map {
-		if id == targetUUID {
-			return a
-		}
+	if a, ok := pool.Map[targetUUID]; ok {
+		return a
 	}
 	return nil
 }
