@@ -23,6 +23,7 @@ type BaseAPI struct {
 	Pool       Pool               `json:"-"`
 	CloseChan  chan CloseType     `json:"-"`
 	ConfigChan chan ClientMessage `json:"-"`
+	StopChans  []chan bool        `json:"-"`
 	running    bool
 }
 
@@ -38,6 +39,7 @@ func (b *BaseAPI) Init(name string, sockets map[Socket]bool, pool Pool, id uuid.
 	// TODO Remove arbitrary magic numbers?
 	b.CloseChan = make(chan CloseType, 10)
 	b.ConfigChan = make(chan ClientMessage, 10)
+	b.StopChans = make([]chan bool, 0)
 	b.running = true
 }
 
@@ -82,7 +84,8 @@ func (b *BaseAPI) Run() {
 	defer func() {
 		log.Printf("STOPPING BASE API: %s\n", b.UUID)
 	}()
-	for b.Running() {
+	stop := b.AddStopChan()
+	for {
 		select {
 		case msg := <-b.CloseChan:
 			log.Printf("Closing sockets: %v\n", msg.Sockets)
@@ -97,8 +100,8 @@ func (b *BaseAPI) Run() {
 					Save: msg.Save,
 				})
 			}
-		default:
-			continue
+		case <-stop:
+			return
 		}
 	}
 }
@@ -116,6 +119,9 @@ func (b *BaseAPI) SetPosition(pos Position) {
 func (b *BaseAPI) Stop() {
 	log.Printf("Stopping api %s (%s)\n", b.Name, b.UUID)
 	b.running = false
+	for _, stop := range b.StopChans {
+		stop <- true
+	}
 }
 
 // Send to websocket
@@ -141,10 +147,11 @@ func (b *BaseAPI) AddSocket(socket Socket) {
 		log.Printf("Adding new socket: %v!\n", socket)
 		b.Sockets[socket] = true
 		go func(config chan ClientMessage, close chan bool) {
+			stop := b.AddStopChan()
 			defer func() {
 				log.Printf("Exiting channel forwarding for socket!\n")
 			}()
-			for b.Running() {
+			for {
 				select {
 				case msg := <-config:
 					b.ConfigChan <- msg
@@ -152,12 +159,18 @@ func (b *BaseAPI) AddSocket(socket Socket) {
 					sockets := make(map[Socket]bool)
 					sockets[socket] = true
 					b.CloseChan <- CloseType{Sockets: sockets, Save: save}
-				default:
-					continue
+				case <-stop:
+					return
 				}
 			}
 		}(socket.ConfigChan(), socket.CloseChan())
 	}
+}
+
+func (b *BaseAPI) AddStopChan() chan bool {
+	stop := make(chan bool, 1)
+	b.StopChans = append(b.StopChans, stop)
+	return stop
 }
 
 func (b *BaseAPI) Running() bool {

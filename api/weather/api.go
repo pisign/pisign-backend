@@ -89,11 +89,12 @@ func (a *API) Run() {
 	go a.BaseAPI.Run()
 	a.Send(a.Data())
 	ticker := time.NewTicker(10 * time.Second)
+	stop := a.AddStopChan()
 	defer func() {
 		ticker.Stop()
 		log.Printf("STOPPING WEATHER: %s\n", a.UUID)
 	}()
-	for a.Running() {
+	for {
 		select {
 		case body := <-a.ConfigChan:
 			err := a.Configure(body)
@@ -102,8 +103,8 @@ func (a *API) Run() {
 			}
 		case <-ticker.C:
 			a.Send(a.Data())
-		default:
-			continue
+		case <-stop:
+			return
 		}
 	}
 }
