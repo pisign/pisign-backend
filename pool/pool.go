@@ -67,7 +67,8 @@ func (pool *Pool) Add(apiName string, id uuid.UUID, sockets map[types.Socket]boo
 		for socket := range sockets {
 			a.AddSocket(socket)
 		}
-		// TODO Force data send to new socket
+		// TODO is this the proper way to force a data update? It seems a bit off for some reason, but it works
+		a.Send(a.Data())
 
 		return a, nil
 	}
