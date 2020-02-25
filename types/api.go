@@ -1,6 +1,8 @@
 package types
 
 import (
+	"errors"
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -68,6 +70,10 @@ func (b *BaseAPI) Configure(message ClientMessage) error {
 		return b.Pool.Switch(b, message.Name)
 	case Delete:
 		b.CloseChan <- CloseType{Sockets: b.Sockets, Save: true}
+	case ConfigureAPI:
+		break
+	default:
+		return errors.New(fmt.Sprintf("Invalid Client Message action: %s!", message.Action))
 	}
 	return nil
 }
