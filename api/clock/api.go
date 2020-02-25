@@ -85,7 +85,8 @@ func (a *API) Run() {
 		ticker.Stop()
 		log.Printf("STOPPING CLOCK: %s\n", a.UUID)
 	}()
-	for a.Running() {
+	stop := a.AddStopChan()
+	for {
 		select {
 		case body := <-a.ConfigChan:
 			if err := a.Configure(body); err != nil {
@@ -106,8 +107,8 @@ func (a *API) Run() {
 		case t := <-ticker.C:
 			a.time = t
 			a.Send(a.Data())
-		default:
-			continue
+		case <-stop:
+			return
 		}
 	}
 }

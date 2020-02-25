@@ -32,8 +32,8 @@ type API interface {
 	GetPosition() Position
 	SetPosition(Position)
 	Stop()
-	Running() bool
 	Send(interface{}, error)
+	Running() bool
 
 	AddSocket(Socket)
 }
