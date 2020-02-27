@@ -1,9 +1,10 @@
 package types
 
 type TextConfig struct {
-	Text string
+	Title string
+	Text  string
 }
 
 type TextResponse struct {
-	Text string
+	TextConfig
 }
