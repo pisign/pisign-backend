@@ -9,89 +9,104 @@ The types and apis that are avaliable to the frontend are summarized in the `./s
 Below are some files showing the barebones structure of an api called `NAME`
 
 **api/NAME/api.go** contains most of the core logic
-```go
+
+```text
 package NAME
 
-import (
-    "github.com/pisign/pisign-backend/types"
-    // import other necessary packages
-)
+import ...
 
-// API struct to hold proper data types
 type API struct {
 	types.BaseAPI
 	Config types.NAMEConfig
-    ResponseObject Response
-
-    // Any other necessary fields
+	
+    // Add other fields as necessary, (keep lowercase to avoid being stored in json)
 }
 
 // NewAPI creates a new API
-func NewAPI(configChan chan types.ClientMessage, pool types.Pool) *API {
+func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("<NAME>", configChan, pool)
-	if a.Pool != nil {
-		a.Pool.Register(a)
-	}
-	
-    // Default config values, eg:
-    // a.Location = "Local"
+	a.BaseAPI.Init("clock", sockets, pool, id)
+
+    // Configure default values as necessary, for example:
+    // a.Config.Variable = "Value"
+
 	return a
 }
 
-// Configure from json message sent from client
-func (a *API) Configure(body types.ClientMessage) {
-    // Also call parent Configure first
-	a.ConfigurePosition(body.Position)
 
-	if len(body.Config) == 0 {
-		return
-	}
-
-    // Catch error if object can not be configured properly
-	if err := json.Unmarshal(body.Config, &a.Config); err != nil {
-		log.Println("Could not properly configure clock")
-		a.Config = oldConfig
-		return
-	}
-    // Add other checks or logic as necessary	
-    
-    // Update the connected pool object
-	a.Pool.Save()
-}
-
-// Data performs the bulk work of retrieving the data from an external source
-func (a *API) Data() interface{} {
-    // Main logic here
-
-	return Response{/*Fill in proper fields*/}
-}
-
-// Run main entry point to API
-func (a *API) Run(w types.Socket) {
-    log.Println("Running <NAME>")
-    
-    // Creates a timer that goes off every second
-    ticker := time.NewTicker(1 * time.Second)
-
+// Configure based on client message
+func (a *API) Configure(message types.ClientMessage) error {
+    // Make sure the client widget is immediately sent new data with new config options
 	defer func() {
-		log.Println("STOPPING <NAME>")
-        ticker.Stop()
-        // Any additional cleanup work goes here
+		if a.Pool != nil && a.Sockets != nil {
+			a.Pool.Save()
+			a.Send(a.Data())
+		}
 	}()
+
+	if err := a.BaseAPI.Configure(message); err != nil {
+		return err
+	}
+
+	switch message.Action {
+	case types.ConfigureAPI, types.Initialize:
+		log.Println("Configuring CLOCK:", message)
+		oldConfig := a.Config
+		if err := json.Unmarshal(message.Config, &a.Config); err != nil {
+			log.Println("Could not properly configure clock")
+			a.Config = oldConfig
+			return errors.New("could not properly configure NAME")
+		}
+
+		// Add custom checks for config fields here (see the `time` api as an example)
+
+		log.Println("NAME configuration successful:", a)
+	}
+
+	return nil
+}
+
+// Data performs a bulk of the computational logic
+func (a *API) Data() (interface{}, error) {
+	// Perform logic here (including call to external API)
+    
+    // Successful:
+    // return types.NAMEResponse{/* Fields go here */}, nil
+
+    // Error:
+    // return nil, errors.New("ERROR GETTING DATA FOR <NAME>")
+}
+
+// Run main entry point to the API
+func (a *API) Run() {
+    // Start up the BaseAPI to handle core API stuff
+	go a.BaseAPI.Run()
+
+	log.Println("Running <NAME>")
+
+    // Send data to client (using default config values)
+	a.Send(a.Data())
+    
+    // Set up a new ticker (if you want to send info the client at set time intervals)
+    // You can change the time length as necessary
+	ticker := time.NewTicker(1 * time.Second)
+	defer func() {
+		ticker.Stop()
+		log.Printf("STOPPING <NAME>: %s\n", a.UUID)
+	}()
+
+    // Create a new channel to recieve termination messages on
+	stop := a.AddStopChan()
 	for {
 		select {
-		case body := <-a.ConfigChan: // Configuration message received
-			a.Configure(body)
-		case save := <-w.Close(): // Socket connection was closed, stop running
-			a.Pool.Unregister(types.Unregister{
-				API:  a,
-				Save: save,
-			})			
-            return
-		case <- ticker.C:
-			// Do any necessary pre-processing logic
-			w.Send(a.Data()) // Send data to client through websocket
+		case body := <-a.ConfigChan: // Configuration messages
+			if err := a.Configure(body); err != nil {
+				a.Send(nil, err)
+			}
+		case t := <-ticker.C: // Update timer tick
+			a.Send(a.Data())
+		case <-stop: // Terminate
+			return
 		}
 	}
 }

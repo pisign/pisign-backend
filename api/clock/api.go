@@ -92,18 +92,6 @@ func (a *API) Run() {
 			if err := a.Configure(body); err != nil {
 				a.Send(nil, err)
 			}
-		case msg := <-a.CloseChan:
-			for socket := range msg.Sockets {
-				delete(a.Sockets, socket)
-				socket.Close()
-			}
-			if len(a.Sockets) == 0 {
-				a.Stop()
-				a.Pool.Unregister(types.Unregister{
-					API:  a,
-					Save: msg.Save,
-				})
-			}
 		case t := <-ticker.C:
 			a.time = t
 			a.Send(a.Data())
