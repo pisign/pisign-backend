@@ -53,7 +53,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 	case types.ConfigureAPI, types.Initialize:
 		log.Println("Configuring <NAME>:", message)
 		oldConfig := a.Config
-		if err := json.Unmarshal(message.Config, &a.Config); err != nil {
+		if err := utils.ParseJSON(message.Config, &a.Config); err != nil {
 			log.Println("Could not properly configure <NAME>")
 			a.Config = oldConfig
 			return errors.New("could not properly configure <NAME>")
