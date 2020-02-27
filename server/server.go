@@ -84,14 +84,13 @@ func setupRoutes() {
 	//http.HandleFunc("/layouts", serveLayouts)
 	setupStaticFiles("assets/images", "/images/")
 	setupStaticFiles("assets/layouts", "/layouts/")
+	setupStaticFiles("dist", "/")
 }
 
 // StartLocalServer creates a new server on localhost
 func StartLocalServer(port int) {
 	addr := fmt.Sprintf("0.0.0.0:%v", port)
 	log.Printf("Running server at %v\n", addr)
-    fs := http.FileServer(http.Dir("dist"))
-    http.Handle("/", fs)
 	setupRoutes()
 	http.ListenAndServe(addr, nil)
 }
