@@ -23,7 +23,8 @@ func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
 	a.BaseAPI.Init("text", sockets, pool, id)
 
-	a.Config.Text = "[Text]"
+	a.Config.Text = ""
+	a.Config.Title = ""
 
 	return a
 }
@@ -62,7 +63,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 // Data performs a bulk of the computational logic
 func (a *API) Data() (interface{}, error) {
-	return types.TextResponse{Text: a.Config.Text}, nil
+	return types.TextResponse{TextConfig: a.Config}, nil
 }
 
 // Run main entry point to the API
