@@ -1,0 +1,64 @@
+type WeatherResponse {
+    BaseMessage  BaseMessage
+    Coord        Coord
+    Weather      []types.Weather
+    Base         string
+    Main         Main
+    Visibility   float64
+    Wind         Wind
+    Rain         Rain
+    Clouds       Clouds
+    DT           float64
+    Sys          Sys
+    Timezone     float64
+    ID           float64
+    Name         string
+    COD          float64
+    Zipcode      float64
+}
+
+type Coord {
+    Lon          float64
+    Lat          float64
+}
+
+type Main {
+    Temp         float64
+    FeelsLike    float64
+    TempMin      float64
+    TempMax      float64
+    Pressure     float64
+    Humidity     float64
+}
+
+type Wind {
+    Speed        float64
+    Deg          float64
+}
+
+type Rain {
+    OneHR        float64
+}
+
+type Clouds {
+    All          float64
+}
+
+type Sys {
+    Type         float64
+    ID           float64
+    Country      string
+    Sunrise      float64
+    Sunset       float64
+}
+
+type BaseMessage {
+    Status       MessageStatus
+    Error        string
+    Data         interface {}
+}
+
+type ClockResponse {
+    Time         int64
+}
+

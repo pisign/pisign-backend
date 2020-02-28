@@ -69,7 +69,7 @@ func (b *BaseAPI) Configure(message ClientMessage) error {
 	case ConfigurePosition, Initialize:
 		b.SetPosition(message.Position)
 	case ChangeAPI:
-		return b.Pool.Switch(b, message.Name)
+		return b.Pool.Switch(b, message)
 	case Delete:
 		b.CloseChan <- CloseType{Sockets: b.Sockets, Save: true}
 	case ConfigureAPI:
