@@ -68,7 +68,7 @@ type Unregister struct {
 type Pool interface {
 	Register(API)
 	Unregister(Unregister)
-	Switch(API, string) error
+	Switch(API, ClientMessage) error
 	Save()
 	Add(string, uuid.UUID, map[Socket]bool) (API, error)
 }

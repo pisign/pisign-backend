@@ -106,7 +106,8 @@ func (pool *Pool) Unregister(data types.Unregister) {
 }
 
 // Switch from one API type to another, while maintaining the same socket
-func (pool *Pool) Switch(a types.API, name string) error {
+func (pool *Pool) Switch(a types.API, message types.ClientMessage) error {
+	name := message.Name
 	log.Printf("Switching API: %s -> %s\n", a.GetName(), name)
 	sockets := a.GetSockets()
 	id := a.GetUUID()
@@ -117,7 +118,19 @@ func (pool *Pool) Switch(a types.API, name string) error {
 	if err != nil {
 		return err
 	}
+	// Sets the position of the API
 	newAPI.SetPosition(pos)
+
+	// Configs the API
+	err = newAPI.Configure(types.ClientMessage{
+		Action: types.ConfigureAPI,
+		Config: message.Config,
+	})
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
