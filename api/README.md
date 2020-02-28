@@ -8,17 +8,23 @@ The types and apis that are avaliable to the frontend are summarized in the `./s
 
 Below are some files showing the barebones structure of an api called `<NAME>`
 
+<<<<<<< HEAD
 **api/<NAME>/api.go** contains most of the core logic
 
 ```text
 package <NAME>
+=======
+**api/NAME/api.go** contains most of the core logic
+
+```text
+package NAME
+>>>>>>> bc5cfe521ea2d81d12abe8690931977fe40fd83e
 
 import ...
 
 type API struct {
 	types.BaseAPI
 	Config types.<NAME>Config
-	
     // Add other fields as necessary, (keep lowercase to avoid being stored in json)
 }
 
