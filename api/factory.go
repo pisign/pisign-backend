@@ -4,6 +4,8 @@ package api
 import (
 	"fmt"
 
+	"github.com/pisign/pisign-backend/api/sysinfo"
+
 	"github.com/pisign/pisign-backend/api/text"
 
 	"github.com/google/uuid"
@@ -27,6 +29,8 @@ func NewAPI(name string, sockets map[types.Socket]bool, pool types.Pool, id uuid
 		return clock.NewAPI(sockets, pool, id), nil
 	case "text":
 		return text.NewAPI(sockets, pool, id), nil
+	case "sysinfo":
+		return sysinfo.NewAPI(sockets, pool, id), nil
 	default:
 		return nil, InvalidAPIError{name}
 	}
