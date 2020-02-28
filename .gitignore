@@ -16,7 +16,9 @@
 
 coverage.txt
 *.json
-
+# static files
+assets/
 # static files
 /dist
 main
+assets/

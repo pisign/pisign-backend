@@ -12,7 +12,7 @@ import (
 	"github.com/pisign/pisign-backend/utils"
 )
 
-const storageFolder string = "layouts"
+const storageFolder string = "assets/layouts"
 
 // Layout of multiple Sockets
 // Each layout is stored serverside to be retrieved later by the client

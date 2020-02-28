@@ -71,20 +71,26 @@ func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func setupStaticFiles(directory string, path string) {
+	fileServer := http.FileServer(http.Dir(directory))
+	http.Handle(path, http.StripPrefix(path, fileServer))
+}
+
 func setupRoutes() {
 	p := pool.NewPool()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		socketConnectionHandler(p, w, r)
 	})
-	http.HandleFunc("/layouts", serveLayouts)
+	//http.HandleFunc("/layouts", serveLayouts)
+	setupStaticFiles("assets/images", "/images/")
+	setupStaticFiles("assets/layouts", "/layouts/")
+	setupStaticFiles("dist", "/")
 }
 
 // StartLocalServer creates a new server on localhost
 func StartLocalServer(port int) {
 	addr := fmt.Sprintf("0.0.0.0:%v", port)
 	log.Printf("Running server at %v\n", addr)
-    fs := http.FileServer(http.Dir("dist"))
-    http.Handle("/", fs)
 	setupRoutes()
 	http.ListenAndServe(addr, nil)
 }
