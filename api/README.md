@@ -18,7 +18,6 @@ import ...
 type API struct {
 	types.BaseAPI
 	Config types.<NAME>Config
-	
     // Add other fields as necessary, (keep lowercase to avoid being stored in json)
 }
 
