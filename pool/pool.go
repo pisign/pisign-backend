@@ -1,13 +1,16 @@
 package pool
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
 	"net"
+	"os"
 
 	"github.com/google/uuid"
-	"github.com/pisign/pisign-backend/api"
 
+	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -17,6 +20,39 @@ type Pool struct {
 	unregisterChan chan types.Unregister
 	Map            map[uuid.UUID]types.API
 	name           string
+	ImageDB        *types.ImageDB
+}
+
+func (pool *Pool) GetImageDB() interface{} {
+	return pool.ImageDB
+}
+
+func setupImgDB() *types.ImageDB {
+	var imgDB types.ImageDB
+
+	imgFile, err := os.Open("./assets/images/images.json")
+
+	if err != nil {
+		log.Println(err.Error())
+		return &types.ImageDB{}
+	}
+
+	defer imgFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(imgFile)
+
+	if err = json.Unmarshal(byteValue, &imgDB); err != nil {
+		log.Println(err.Error())
+		return &types.ImageDB{}
+	}
+
+	imgDB.NumImages = len(imgDB.Images)
+	return &imgDB
+}
+
+func SaveImageDB(db *types.ImageDB) {
+	file, _ := json.MarshalIndent(db, "", " ")
+	_ = ioutil.WriteFile("./assets/images/images.json", file, 755)
 }
 
 // NewPool generates a new pool
@@ -26,6 +62,7 @@ func NewPool() *Pool {
 		unregisterChan: make(chan types.Unregister),
 		Map:            make(map[uuid.UUID]types.API),
 		name:           "main",
+		ImageDB:        setupImgDB(),
 	}
 }
 

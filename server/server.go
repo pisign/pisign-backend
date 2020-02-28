@@ -7,8 +7,13 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
+	"path"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -47,6 +52,69 @@ func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Req
 	go ws.Read()
 }
 
+func uploadImageHandler(w http.ResponseWriter, r *http.Request, db *types.ImageDB) {
+	log.Println("Upload Image endpoint hit!")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	switch r.Method {
+	case http.MethodPost:
+		// From https://socketloop.com/tutorials/upload-multiple-files-golang
+		err := r.ParseMultipartForm(200000) // grab the multipart form
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		formdata := r.MultipartForm // ok, no problem so far, read the Form data
+
+		// Get the tag list from the form
+		tags := r.Form.Get("tag")
+		numfiles, _ := strconv.Atoi(r.Form.Get("length"))
+
+		tagsList := strings.Split(tags, ",")
+		for n := 0; n < numfiles; n++ { // loop through the files one by one
+			key := "files_" + strconv.Itoa(n)
+			formfile := formdata.File[key][0]
+			file, err := formfile.Open()
+			defer file.Close()
+			if err != nil {
+				fmt.Fprintln(w, err)
+				return
+			}
+
+			// Create a new UUID for the file, and get the file extention, and save to that file
+			newFileName := uuid.New().String()
+			extension := path.Ext(formfile.Filename)
+			filepath := "./assets/images/" + newFileName + extension
+			out, err := os.Create(filepath)
+
+			defer out.Close()
+			if err != nil {
+				fmt.Fprintf(w, "Unable to create the file for writing. Check your write access privilege")
+				return
+			}
+
+			_, err = io.Copy(out, file) // file not files[i] !
+
+			if err != nil {
+				fmt.Fprintln(w, err)
+				return
+			}
+
+			// If everything was successful, append the new image to the json file
+			db.Images = append(db.Images, types.TaggedImage{
+				Tags:     tagsList,
+				FilePath: filepath,
+			})
+			db.NumImages++
+
+			fmt.Fprintf(w, "Files uploaded successfully : ")
+		}
+		pool.SaveImageDB(db)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 func serveLayouts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Layouts endpoing hit!")
 	layoutName := r.FormValue("name")
@@ -76,23 +144,40 @@ func setupStaticFiles(directory string, path string) {
 	http.Handle(path, http.StripPrefix(path, fileServer))
 }
 
-func setupRoutes() {
+func setupRoutes() *pool.Pool {
 	p := pool.NewPool()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		socketConnectionHandler(p, w, r)
 	})
 	http.HandleFunc("/layouts", serveLayouts)
-	setupStaticFiles("assets/images", "/images/")
-	//setupStaticFiles("assets/layouts", "/layouts/")
+	http.HandleFunc("/uploads", func(w http.ResponseWriter, r *http.Request) {
+		uploadImageHandler(w, r, p.ImageDB)
+	})
+
+	http.HandleFunc("/assets/images/", func(w http.ResponseWriter, r *http.Request) {
+		fileServer := http.FileServer(http.Dir("assets/images"))
+		// Allow CORS
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		http.StripPrefix("/assets/images/", fileServer).ServeHTTP(w, r)
+	})
+
 	setupStaticFiles("dist", "/")
+	return p
 }
 
 // StartLocalServer creates a new server on localhost
 func StartLocalServer(port int) {
 	addr := fmt.Sprintf("0.0.0.0:%v", port)
 	log.Printf("Running server at %v\n", addr)
-	setupRoutes()
-	http.ListenAndServe(addr, nil)
+	p := setupRoutes()
+	err := http.ListenAndServe(addr, nil)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	// Make sure to save the ImageDB before shutdown
+	defer func() {
+		pool.SaveImageDB(p.ImageDB)
+	}()
 }
 
 var upgrader = websocket.Upgrader{

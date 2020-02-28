@@ -48,6 +48,26 @@ func WrapError(e error) {
 	}
 }
 
+//https://dabase.com/e/15006/
+func DeleteEmpty(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
+}
+
+func StringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 // StructPrint prints out the structure of a Struct
 func StructPrint(v interface{}) {
 
