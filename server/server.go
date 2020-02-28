@@ -81,9 +81,9 @@ func setupRoutes() {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		socketConnectionHandler(p, w, r)
 	})
-	//http.HandleFunc("/layouts", serveLayouts)
+	http.HandleFunc("/layouts", serveLayouts)
 	setupStaticFiles("assets/images", "/images/")
-	setupStaticFiles("assets/layouts", "/layouts/")
+	//setupStaticFiles("assets/layouts", "/layouts/")
 	setupStaticFiles("dist", "/")
 }
 
