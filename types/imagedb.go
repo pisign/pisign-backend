@@ -1,11 +1,36 @@
 package types
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
+	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"os"
 )
+
+func NewImageDB() *ImageDB {
+	var imgDB ImageDB
+
+	imgFile, err := os.Open("./assets/images/images.json")
+
+	if err != nil {
+		log.Println(err.Error())
+		return &ImageDB{}
+	}
+
+	defer imgFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(imgFile)
+
+	if err = json.Unmarshal(byteValue, &imgDB); err != nil {
+		log.Println(err.Error())
+		return &ImageDB{}
+	}
+
+	return &imgDB
+}
 
 // TaggedImage is an instance of an image with tags
 type TaggedImage struct {
@@ -19,6 +44,10 @@ type ImageDB struct {
 	Images     []TaggedImage
 	NumImages  int
 	UniqueTags []string // the tag "all" means to show all?
+}
+
+func (db *ImageDB) GetNumImages() int {
+	return len(db.Images)
 }
 
 func (db *ImageDB) AddImage(filepath string, file multipart.File, tagsList []string) error {
@@ -40,7 +69,6 @@ func (db *ImageDB) AddImage(filepath string, file multipart.File, tagsList []str
 		Tags:     tagsList,
 		FilePath: filepath,
 	})
-	db.NumImages++
 
 	return nil
 }

@@ -63,7 +63,7 @@ func (a *API) Data() (interface{}, error) {
 	// Also send all the possible tags so the client can choose later which tags to use
 	// when configuring the api
 	imgDB := a.Pool.GetImageDB()
-	images := make([]string, imgDB.NumImages-1)
+	images := make([]string, imgDB.GetNumImages())
 
 	for _, item := range imgDB.Images {
 		// Add to the tag to the tags set

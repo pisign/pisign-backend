@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"os"
 
 	"github.com/google/uuid"
 
@@ -27,30 +26,8 @@ func (pool *Pool) GetImageDB() *types.ImageDB {
 	return pool.ImageDB
 }
 
-func setupImgDB() *types.ImageDB {
-	var imgDB types.ImageDB
-
-	imgFile, err := os.Open("./assets/images/images.json")
-
-	if err != nil {
-		log.Println(err.Error())
-		return &types.ImageDB{}
-	}
-
-	defer imgFile.Close()
-
-	byteValue, _ := ioutil.ReadAll(imgFile)
-
-	if err = json.Unmarshal(byteValue, &imgDB); err != nil {
-		log.Println(err.Error())
-		return &types.ImageDB{}
-	}
-
-	imgDB.NumImages = len(imgDB.Images)
-	return &imgDB
-}
-
 func (pool *Pool) SaveImageDB() {
+	pool.ImageDB.NumImages = pool.ImageDB.GetNumImages()
 	file, _ := json.MarshalIndent(pool.ImageDB, "", " ")
 	_ = ioutil.WriteFile("./assets/images/images.json", file, 755)
 }
@@ -62,7 +39,7 @@ func NewPool() *Pool {
 		unregisterChan: make(chan types.Unregister),
 		Map:            make(map[uuid.UUID]types.API),
 		name:           "main",
-		ImageDB:        setupImgDB(),
+		ImageDB:        types.NewImageDB(),
 	}
 }
 
