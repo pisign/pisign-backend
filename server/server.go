@@ -7,13 +7,13 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/pisign/pisign-backend/utils"
 
 	"github.com/google/uuid"
 
@@ -52,13 +52,16 @@ func socketConnectionHandler(pool types.Pool, w http.ResponseWriter, r *http.Req
 	go ws.Read()
 }
 
-func uploadImageHandler(w http.ResponseWriter, r *http.Request, db *types.ImageDB) {
+func uploadImageHandler(w http.ResponseWriter, r *http.Request, pool *pool.Pool) {
+	db := pool.ImageDB
 	log.Println("Upload Image endpoint hit!")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	var maxMemoryToUse int64
+	maxMemoryToUse = 200000
 	switch r.Method {
 	case http.MethodPost:
 		// From https://socketloop.com/tutorials/upload-multiple-files-golang
-		err := r.ParseMultipartForm(200000) // grab the multipart form
+		err := r.ParseMultipartForm(maxMemoryToUse) // grab the multipart form
 		if err != nil {
 			log.Println(err)
 			return
@@ -71,6 +74,14 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request, db *types.ImageD
 		numfiles, _ := strconv.Atoi(r.Form.Get("length"))
 
 		tagsList := strings.Split(tags, ",")
+
+		// Update the unique tags list
+		for _, tag := range tagsList {
+			if !utils.StringInSlice(tag, db.UniqueTags) {
+				db.UniqueTags = append(db.UniqueTags, tag)
+			}
+		}
+
 		for n := 0; n < numfiles; n++ { // loop through the files one by one
 			key := "files_" + strconv.Itoa(n)
 			formfile := formdata.File[key][0]
@@ -85,31 +96,14 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request, db *types.ImageD
 			newFileName := uuid.New().String()
 			extension := path.Ext(formfile.Filename)
 			filepath := "./assets/images/" + newFileName + extension
-			out, err := os.Create(filepath)
-
-			defer out.Close()
+			err = db.AddImage(filepath, file, tagsList)
 			if err != nil {
-				fmt.Fprintf(w, "Unable to create the file for writing. Check your write access privilege")
-				return
+				fmt.Fprint(w, err.Error())
 			}
-
-			_, err = io.Copy(out, file) // file not files[i] !
-
-			if err != nil {
-				fmt.Fprintln(w, err)
-				return
-			}
-
-			// If everything was successful, append the new image to the json file
-			db.Images = append(db.Images, types.TaggedImage{
-				Tags:     tagsList,
-				FilePath: filepath,
-			})
-			db.NumImages++
 
 			fmt.Fprintf(w, "Files uploaded successfully : ")
 		}
-		pool.SaveImageDB(db)
+		pool.SaveImageDB()
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -151,7 +145,7 @@ func setupRoutes() *pool.Pool {
 	})
 	http.HandleFunc("/layouts", serveLayouts)
 	http.HandleFunc("/uploads", func(w http.ResponseWriter, r *http.Request) {
-		uploadImageHandler(w, r, p.ImageDB)
+		uploadImageHandler(w, r, p)
 	})
 
 	http.HandleFunc("/assets/images/", func(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +170,7 @@ func StartLocalServer(port int) {
 	}
 	// Make sure to save the ImageDB before shutdown
 	defer func() {
-		pool.SaveImageDB(p.ImageDB)
+		p.SaveImageDB()
 	}()
 }
 

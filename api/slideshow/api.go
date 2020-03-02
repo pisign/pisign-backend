@@ -62,15 +62,13 @@ func (a *API) Data() (interface{}, error) {
 	// Get the filepaths to include for a set of tags
 	// Also send all the possible tags so the client can choose later which tags to use
 	// when configuring the api
-	imgDB := a.Pool.GetImageDB().(*types.ImageDB)
+	imgDB := a.Pool.GetImageDB()
 	images := make([]string, imgDB.NumImages-1)
-	uniqueTagsSet := make(map[string]bool)
 
 	for _, item := range imgDB.Images {
 		// Add to the tag to the tags set
 		added := false
 		for _, tag := range item.Tags {
-			uniqueTagsSet[tag] = true
 			if utils.StringInSlice(tag, a.Config.IncludedTags) {
 				if !added {
 					if len(item.FilePath[1:]) > 0 {
@@ -89,29 +87,19 @@ func (a *API) Data() (interface{}, error) {
 		}
 	}
 
-	uniqueTags := make([]string, len(uniqueTagsSet)-1)
-
-	// Get the unique tags from the set
-	for tag := range uniqueTagsSet {
-		uniqueTags = append(uniqueTags, tag)
-	}
-
 	// TODO there must be some issue with making slices that causes
 	// us to have empty lists... fix that so we don't have to rely on
 	// these functions to clean that up!
-	uniqueTags = utils.DeleteEmpty(uniqueTags)
 	imagesNotEmpty := utils.DeleteEmpty(images)
 
-	imgDB.UniqueTags = uniqueTags
 	a.FilePathsForTags = imagesNotEmpty
 
-	log.Println("Sending with tags", uniqueTags)
 	log.Println("Sending files", imagesNotEmpty)
 
 	return types.SlideShowResponse{
 		FileImages: imagesNotEmpty,
 		Speed:      a.Config.Speed,
-		UniqueTags: uniqueTags,
+		UniqueTags: imgDB.UniqueTags,
 	}, nil
 }
 
@@ -124,7 +112,7 @@ func (a *API) Run() {
 
 	// Send data to client (using default config values)
 	a.Send(a.Data())
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 
 	defer func() {
 		ticker.Stop()

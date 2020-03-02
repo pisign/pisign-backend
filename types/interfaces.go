@@ -71,5 +71,6 @@ type Pool interface {
 	Switch(API, ClientMessage) error
 	Save()
 	Add(string, uuid.UUID, map[Socket]bool) (API, error)
-	GetImageDB() interface{}
+	GetImageDB() *ImageDB
+	SaveImageDB()
 }

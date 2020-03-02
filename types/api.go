@@ -27,20 +27,6 @@ type BaseAPI struct {
 	running    bool
 }
 
-// TaggedImage is an instance of an image with tags
-type TaggedImage struct {
-	Tags     []string
-	FilePath string
-}
-
-// ImageDB holds the images that we have access to
-type ImageDB struct {
-	// A map of tags to file locations?
-	Images     []TaggedImage
-	NumImages  int
-	UniqueTags []string // the tag "all" means to show all?
-}
-
 // Init Initialization
 func (b *BaseAPI) Init(name string, sockets map[Socket]bool, pool Pool, id uuid.UUID) {
 	b.Name = name

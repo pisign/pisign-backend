@@ -23,7 +23,7 @@ type Pool struct {
 	ImageDB        *types.ImageDB
 }
 
-func (pool *Pool) GetImageDB() interface{} {
+func (pool *Pool) GetImageDB() *types.ImageDB {
 	return pool.ImageDB
 }
 
@@ -50,8 +50,8 @@ func setupImgDB() *types.ImageDB {
 	return &imgDB
 }
 
-func SaveImageDB(db *types.ImageDB) {
-	file, _ := json.MarshalIndent(db, "", " ")
+func (pool *Pool) SaveImageDB() {
+	file, _ := json.MarshalIndent(pool.ImageDB, "", " ")
 	_ = ioutil.WriteFile("./assets/images/images.json", file, 755)
 }
 
