@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/pisign/pisign-backend/utils"
+
 	"github.com/google/uuid"
 )
 
@@ -90,7 +92,7 @@ func (b *BaseAPI) Run() {
 		case msg := <-b.CloseChan:
 			log.Printf("Closing sockets: %v\n", msg.Sockets)
 			for socket := range msg.Sockets {
-				socket.Close()
+				utils.WrapError(socket.Close())
 				delete(b.Sockets, socket)
 			}
 			if len(b.Sockets) == 0 {
@@ -136,7 +138,7 @@ func (b *BaseAPI) Send(data interface{}, err error) {
 		}
 	} else {
 		for socket := range b.Sockets {
-			socket.SendSuccess(data)
+			socket.SendSuccess(data, b.Position)
 		}
 	}
 }

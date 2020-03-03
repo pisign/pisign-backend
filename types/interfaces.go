@@ -51,7 +51,7 @@ type Socket interface {
 
 	// SendErrorMessage sends error message
 	SendErrorMessage(error)
-	SendSuccess(interface{})
+	SendSuccess(interface{}, Position)
 
 	// Wrappers around underlying websocket connection
 	Close() error
