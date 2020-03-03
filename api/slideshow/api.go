@@ -21,7 +21,7 @@ type API struct {
 // NewAPI creates a new API
 func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("slideshow", sockets, pool, id)
+	a.BaseAPI.Init(types.APISlideshow, sockets, pool, id)
 
 	return a
 }

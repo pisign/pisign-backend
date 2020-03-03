@@ -22,7 +22,7 @@ type API struct {
 // NewAPI creates a new clock api
 func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("clock", sockets, pool, id)
+	a.BaseAPI.Init(types.APIClock, sockets, pool, id)
 	a.Config.Location = "Local"
 	return a
 }

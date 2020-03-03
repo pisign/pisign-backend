@@ -55,7 +55,7 @@ func (a *API) Data() (interface{}, error) {
 // NewAPI creates a new weather api for a client
 func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("weather", sockets, pool, id)
+	a.BaseAPI.Init(types.APIWeather, sockets, pool, id)
 	a.ValidCache = false
 	return a
 }

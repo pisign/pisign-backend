@@ -22,7 +22,7 @@ type API struct {
 // NewAPI creates a new API
 func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("SysInfoResponse", sockets, pool, id)
+	a.BaseAPI.Init(types.APISysinfo, sockets, pool, id)
 	a.ValidCache = false
 	return a
 }

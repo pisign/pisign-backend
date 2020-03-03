@@ -10,6 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	APIWeather   string = "weather"
+	APIText             = "text"
+	APIClock            = "clock"
+	APISlideshow        = "slideshow"
+	APITwitter          = "twitter"
+	APISysinfo          = "sysinfo"
+)
+
 // CloseType represents when a socket closes, or a forceful close if Socket is nil
 type CloseType struct {
 	Sockets map[Socket]bool

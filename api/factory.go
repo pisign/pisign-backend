@@ -23,31 +23,31 @@ type InvalidAPIError struct {
 
 func factory(name string, sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID, create bool) (types.API, error) {
 	switch name {
-	case "weather":
+	case types.APIWeather:
 		if create {
 			return weather.NewAPI(sockets, pool, id), nil
 		} else {
 			return new(weather.API), nil
 		}
-	case "clock":
+	case types.APIClock:
 		if create {
 			return clock.NewAPI(sockets, pool, id), nil
 		} else {
 			return new(clock.API), nil
 		}
-	case "text":
+	case types.APIText:
 		if create {
 			return text.NewAPI(sockets, pool, id), nil
 		} else {
 			return new(text.API), nil
 		}
-	case "sysinfo":
+	case types.APISysinfo:
 		if create {
 			return sysinfo.NewAPI(sockets, pool, id), nil
 		} else {
 			return new(sysinfo.API), nil
 		}
-	case "slideshow":
+	case types.APISlideshow:
 		if create {
 			return slideshow.NewAPI(sockets, pool, id), nil
 		} else {
