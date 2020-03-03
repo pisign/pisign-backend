@@ -16,7 +16,7 @@ require (
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
-	github.com/shirou/gopsutil v2.20.1+incompatible // indirect
+	github.com/shirou/gopsutil v2.20.1+incompatible
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
 	golang.org/x/tools v0.0.0-20200207215511-009580c43b84 // indirect
 )

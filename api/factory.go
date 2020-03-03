@@ -4,6 +4,8 @@ package api
 import (
 	"fmt"
 
+	"github.com/pisign/pisign-backend/api/sysinfo"
+
 	"github.com/pisign/pisign-backend/api/clock"
 	"github.com/pisign/pisign-backend/api/slideshow"
 	"github.com/pisign/pisign-backend/api/text"
@@ -39,7 +41,7 @@ func factory(name string, sockets map[types.Socket]bool, pool types.Pool, id uui
 		} else {
 			return new(text.API), nil
 		}
-  case "sysinfo":
+	case "sysinfo":
 		if create {
 			return sysinfo.NewAPI(sockets, pool, id), nil
 		} else {
