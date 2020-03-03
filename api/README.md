@@ -103,7 +103,7 @@ func (a *API) Run() {
 			if err := a.Configure(body); err != nil {
 				a.Send(nil, err)
 			}
-		case t := <-ticker.C: // Update timer tick
+		case <-ticker.C: // Update timer tick
 			a.Send(a.Data())
 		case <-stop: // Terminate
 			return

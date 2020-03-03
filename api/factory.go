@@ -11,6 +11,7 @@ import (
 
 	"github.com/pisign/pisign-backend/api/clock"
 	"github.com/pisign/pisign-backend/api/weather"
+	"github.com/pisign/pisign-backend/api/twitter"
 )
 
 // InvalidAPIError error for missing API
@@ -27,6 +28,8 @@ func NewAPI(name string, sockets map[types.Socket]bool, pool types.Pool, id uuid
 		return clock.NewAPI(sockets, pool, id), nil
 	case "text":
 		return text.NewAPI(sockets, pool, id), nil
+	case "twitter":
+		return twitter.NewAPI(sockets, pool, id), nil
 	default:
 		return nil, InvalidAPIError{name}
 	}

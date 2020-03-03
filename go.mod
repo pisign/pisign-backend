@@ -6,6 +6,8 @@ require (
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
+	github.com/dghubble/go-twitter v0.0.0-20190719072343-39e5462e111f
+	github.com/dghubble/oauth1 v0.6.0
 	github.com/golang/mock v1.4.0
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.1
