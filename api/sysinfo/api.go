@@ -44,8 +44,8 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 	switch message.Action {
 	case types.ConfigureAPI, types.Initialize:
-		log.Println("Configuring SysInfoResponse:", message)
-		log.Println("SysInfoResponse configuration successful:", a)
+		log.Printf("Configuring %s: %v\n", a.Name, message)
+		log.Printf("%s configuration successful: %s", a, a)
 	}
 
 	return nil
@@ -83,7 +83,7 @@ func (a *API) Run() {
 	// Start up the BaseAPI to handle core API stuff
 	go a.BaseAPI.Run()
 
-	log.Println("Running SysInfoResponse")
+	log.Printf("Running %s\n", a)
 
 	a.Send(a.Data())
 
@@ -91,7 +91,7 @@ func (a *API) Run() {
 	ticker := time.NewTicker(3 * time.Second)
 	defer func() {
 		ticker.Stop()
-		log.Printf("STOPPING SysInfoResponse: %s\n", a.UUID)
+		log.Printf("STOPPING %s\n", a)
 	}()
 
 	// Create a new channel to receive termination messages on

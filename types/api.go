@@ -187,3 +187,7 @@ func (b *BaseAPI) AddStopChan() chan bool {
 func (b *BaseAPI) Running() bool {
 	return b.running
 }
+
+func (b *BaseAPI) String() string {
+	return fmt.Sprintf("%s(%s)", b.Name, b.UUID)
+}

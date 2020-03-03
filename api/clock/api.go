@@ -4,6 +4,7 @@ package clock
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -49,12 +50,12 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 	switch message.Action {
 	case types.ConfigureAPI, types.Initialize:
-		log.Println("Configuring CLOCK:", message)
+		log.Printf("Configuring %s: %+v\n", a, message)
 		oldConfig := a.Config
 		if err := json.Unmarshal(message.Config, &a.Config); err != nil {
-			log.Println("Could not properly configure clock")
+			log.Printf("Could not properly configure %s\n", a)
 			a.Config = oldConfig
-			return errors.New("could not properly configure clock")
+			return errors.New(fmt.Sprintf("could not properly configure %s\n", a))
 		}
 
 		if _, err := time.LoadLocation(a.Config.Location); err != nil {
@@ -63,7 +64,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 			return errors.New("could not load timezone " + a.Config.Location)
 		}
 
-		log.Println("Clock configuration successful:", a)
+		log.Println("%s configuration successful: %v\n", a, a)
 	}
 	return nil
 }
@@ -78,12 +79,12 @@ func (a *API) Data() (interface{}, error) {
 // Run main entry point to clock API
 func (a *API) Run() {
 	go a.BaseAPI.Run()
-	log.Println("Running CLOCK")
+	log.Printf("Running %s\n", a)
 	a.Send(a.Data())
 	ticker := time.NewTicker(1 * time.Second)
 	defer func() {
 		ticker.Stop()
-		log.Printf("STOPPING CLOCK: %s\n", a.UUID)
+		log.Printf("STOPPING %s\n", a)
 	}()
 	stop := a.AddStopChan()
 	for {

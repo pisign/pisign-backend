@@ -3,6 +3,7 @@ package text
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/pisign/pisign-backend/utils"
@@ -45,17 +46,17 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 	switch message.Action {
 	case types.ConfigureAPI, types.Initialize:
-		log.Println("Configuring TEXT:", message)
+		log.Printf("Configuring %s: %+v\n", a, message)
 		oldConfig := a.Config
 		if err := utils.ParseJSON(message.Config, &a.Config); err != nil {
-			log.Println("Could not properly configure TEXT")
+			log.Printf("Could not properly configure %s\n", a)
 			a.Config = oldConfig
-			return errors.New("could not properly configure TEXT")
+			return errors.New(fmt.Sprintf("could not properly configure %s", a))
 		}
 
 		// Add custom checks for config fields here (see the `time` api as an example)
 
-		log.Println("TEXT configuration successful:", a)
+		log.Printf("%s configuration successful: %+v\n", a, a)
 	}
 
 	return nil
@@ -71,13 +72,13 @@ func (a *API) Run() {
 	// Start up the BaseAPI to handle core API stuff
 	go a.BaseAPI.Run()
 
-	log.Println("Running TEXT")
+	log.Printf("Running %s\n", a)
 
 	// Send data to client (using default config values)
 	a.Send(a.Data())
 
 	defer func() {
-		log.Printf("STOPPING TEXT: %s\n", a.UUID)
+		log.Printf("STOPPING %s\n", a)
 	}()
 
 	// Create a new channel to recieve termination messages on

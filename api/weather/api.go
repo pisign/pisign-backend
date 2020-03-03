@@ -3,6 +3,7 @@ package weather
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -74,25 +75,25 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 	switch message.Action {
 	case types.ConfigureAPI, types.Initialize:
-		log.Println("Configuring WEATHER:", message)
+		log.Printf("Configuring %s: %+v", a, message)
 		if err := json.Unmarshal(message.Config, &a.Config); err != nil {
-			return errors.New("could not properly configure weather")
+			return errors.New(fmt.Sprintf("could not properly configure %s", a))
 		}
-		log.Println("Weather configuration successfully:", a)
+		log.Printf("%s configuration successfully: %+v", a, a)
 	}
 	return nil
 }
 
 // Run main entry point to weather API
 func (a *API) Run() {
-	log.Println("Running WEATHER")
+	log.Printf("Running %s\n", a)
 	go a.BaseAPI.Run()
 	a.Send(a.Data())
 	ticker := time.NewTicker(10 * time.Second)
 	stop := a.AddStopChan()
 	defer func() {
 		ticker.Stop()
-		log.Printf("STOPPING WEATHER: %s\n", a.UUID)
+		log.Printf("STOPPING %s\n", a)
 	}()
 	for {
 		select {
