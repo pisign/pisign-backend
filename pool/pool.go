@@ -1,13 +1,15 @@
 package pool
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
 	"net"
 
 	"github.com/google/uuid"
-	"github.com/pisign/pisign-backend/api"
 
+	"github.com/pisign/pisign-backend/api"
 	"github.com/pisign/pisign-backend/types"
 )
 
@@ -17,6 +19,17 @@ type Pool struct {
 	unregisterChan chan types.Unregister
 	Map            map[uuid.UUID]types.API
 	name           string
+	ImageDB        *types.ImageDB
+}
+
+func (pool *Pool) GetImageDB() *types.ImageDB {
+	return pool.ImageDB
+}
+
+func (pool *Pool) SaveImageDB() {
+	pool.ImageDB.NumImages = pool.ImageDB.GetNumImages()
+	file, _ := json.MarshalIndent(pool.ImageDB, "", " ")
+	_ = ioutil.WriteFile("./assets/images/images.json", file, 755)
 }
 
 // NewPool generates a new pool
@@ -26,6 +39,7 @@ func NewPool() *Pool {
 		unregisterChan: make(chan types.Unregister),
 		Map:            make(map[uuid.UUID]types.API),
 		name:           "main",
+		ImageDB:        types.NewImageDB(),
 	}
 }
 
@@ -106,8 +120,12 @@ func (pool *Pool) Unregister(data types.Unregister) {
 }
 
 // Switch from one API type to another, while maintaining the same socket
-func (pool *Pool) Switch(a types.API, name string) error {
+func (pool *Pool) Switch(a types.API, message types.ClientMessage) error {
+	name := message.Name
 	log.Printf("Switching API: %s -> %s\n", a.GetName(), name)
+	if err := api.ValidateAPI(name); err != nil {
+		return err
+	}
 	sockets := a.GetSockets()
 	id := a.GetUUID()
 	pos := a.GetPosition()
@@ -117,7 +135,19 @@ func (pool *Pool) Switch(a types.API, name string) error {
 	if err != nil {
 		return err
 	}
+	// Sets the position of the API
 	newAPI.SetPosition(pos)
+
+	// Configs the API
+	err = newAPI.Configure(types.ClientMessage{
+		Action: types.ConfigureAPI,
+		Config: message.Config,
+	})
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
