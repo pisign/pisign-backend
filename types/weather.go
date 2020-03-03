@@ -54,6 +54,7 @@ type Sys struct {
 // WeatherResponse is the struct that encodes the API data from our weather API
 type WeatherResponse struct {
 	BaseMessage
+	WeatherConfig
 	Coord      Coord
 	Weather    []Weather
 	Base       string

@@ -71,7 +71,8 @@ func (a *API) Configure(message types.ClientMessage) error {
 // Data gets the current time!
 func (a *API) Data() (interface{}, error) {
 	return types.ClockResponse{
-		Time: a.time.In(a.loc()).Unix(),
+		Time:        a.time.In(a.loc()).Unix(),
+		ClockConfig: a.Config,
 	}, nil
 }
 
