@@ -123,6 +123,9 @@ func (pool *Pool) Unregister(data types.Unregister) {
 func (pool *Pool) Switch(a types.API, message types.ClientMessage) error {
 	name := message.Name
 	log.Printf("Switching API: %s -> %s\n", a.GetName(), name)
+	if err := api.ValidateAPI(name); err != nil {
+		return err
+	}
 	sockets := a.GetSockets()
 	id := a.GetUUID()
 	pos := a.GetPosition()
