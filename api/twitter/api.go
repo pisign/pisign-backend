@@ -87,6 +87,7 @@ func (a *API) Data() (interface{}, error) {
 
 	response := a.DataObject.Transform()
 	a.ResponseObject = *(response.(*types.TwitterResponse))
+	a.ResponseObject.TwitterConfig = a.Config
 	a.LastCalled = time.Now()
 	a.ValidCache = true
 	return &a.ResponseObject, nil
