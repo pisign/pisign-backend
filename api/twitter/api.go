@@ -85,8 +85,6 @@ func (a *API) Data() (interface{}, error) {
 		return nil, err
 	}
 
-	a.ResponseObject.Status = types.StatusSuccess
-
 	response := a.DataObject.Transform()
 	a.ResponseObject = *(response.(*types.TwitterResponse))
 	a.LastCalled = time.Now()

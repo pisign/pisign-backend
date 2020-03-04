@@ -6,7 +6,7 @@ import (
 
 // TwitterResponse main format for data coming out of twitter api
 type TwitterResponse struct {
-	BaseMessage
+	TwitterConfig
 	Tweets []twitter.Tweet
 }
 
