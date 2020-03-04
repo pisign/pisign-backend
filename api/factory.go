@@ -41,7 +41,11 @@ func factory(name string, sockets map[types.Socket]bool, pool types.Pool, id uui
 			return new(text.API), nil
 		}
 	case "twitter":
-		return twitter.NewAPI(sockets, pool, id), nil
+		if create {
+			return twitter.NewAPI(sockets, pool, id), nil
+		} else {
+			return new(twitter.API), nil
+		}
 	case "slideshow":
 		if create {
 			return slideshow.NewAPI(sockets, pool, id), nil
