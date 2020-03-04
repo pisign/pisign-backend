@@ -1,5 +1,4 @@
 type WeatherResponse {
-    BaseMessage  BaseMessage
     WeatherConfigWeatherConfig
     Coord        Coord
     Weather      []types.Weather
