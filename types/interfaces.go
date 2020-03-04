@@ -51,7 +51,7 @@ type Socket interface {
 
 	// SendErrorMessage sends error message
 	SendErrorMessage(error)
-	SendSuccess(interface{})
+	SendSuccess(interface{}, Position)
 
 	// Wrappers around underlying websocket connection
 	Close() error
@@ -71,4 +71,6 @@ type Pool interface {
 	Switch(API, ClientMessage) error
 	Save()
 	Add(string, uuid.UUID, map[Socket]bool) (API, error)
+	GetImageDB() *ImageDB
+	SaveImageDB()
 }

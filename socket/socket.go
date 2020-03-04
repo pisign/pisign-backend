@@ -60,10 +60,11 @@ func (w *Socket) Read() {
 }
 
 // SendSuccess sends a success message
-func (w *Socket) SendSuccess(msg interface{}) {
+func (w *Socket) SendSuccess(msg interface{}, position types.Position) {
 	w.Send(types.BaseMessage{
-		Status: types.StatusSuccess,
-		Data:   msg,
+		Status:   types.StatusSuccess,
+		Data:     msg,
+		Position: position,
 	})
 }
 
