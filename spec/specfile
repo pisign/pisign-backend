@@ -53,6 +53,7 @@ type Sys {
 }
 
 type BaseMessage {
+    Position     Position
     Status       MessageStatus
     Error        string
     Data         interface {}

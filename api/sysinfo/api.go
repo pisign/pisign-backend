@@ -12,7 +12,7 @@ import (
 
 type API struct {
 	types.BaseAPI
-	Config         interface{} // TODO do we need a config?
+	Config         *types.SysInfoConfig
 	ResponseObject types.SysInfoResponse
 	LastCalled     time.Time `json:"-"`
 	ValidCache     bool
@@ -31,6 +31,7 @@ func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 func (a *API) Configure(message types.ClientMessage) error {
 	// TODO this requires no configuration
 	// Make sure the client widget is immediately sent new data with new config options
+	a.Config = &types.SysInfoConfig{}
 	defer func() {
 		if a.Pool != nil && a.Sockets != nil {
 			a.Pool.Save()

@@ -5,3 +5,6 @@ type SysInfoResponse struct {
 	Total       uint64
 	UsedPercent float64
 }
+
+type SysInfoConfig struct {
+}
