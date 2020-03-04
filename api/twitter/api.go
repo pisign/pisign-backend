@@ -62,6 +62,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 		// Add custom checks for config fields here (see the `time` api as an example)
 
 		log.Println("Twitter configuration successful:", a)
+		a.ValidCache = false
 	}
 
 	return nil
