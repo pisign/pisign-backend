@@ -64,7 +64,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 			return errors.New("could not load timezone " + a.Config.Location)
 		}
 
-		log.Println("%s configuration successful: %v\n", a, a)
+		log.Printf("%s configuration successful: %v\n", a, a)
 	}
 	return nil
 }
