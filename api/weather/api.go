@@ -79,6 +79,7 @@ func (a *API) Configure(message types.ClientMessage) error {
 			return errors.New(fmt.Sprintf("could not properly configure %s", a))
 		}
 		log.Printf("%s configuration successfully: %+v", a, a)
+		a.ValidCache = false
 	}
 	return nil
 }
