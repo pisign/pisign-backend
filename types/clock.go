@@ -2,6 +2,7 @@ package types
 
 // ClockResponse main format for data coming out of clock api
 type ClockResponse struct {
+	ClockConfig
 	Time int64
 }
 

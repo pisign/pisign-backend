@@ -64,6 +64,8 @@ func (a *API) Data() (interface{}, error) {
 	// Also send all the possible tags so the client can choose later which tags to use
 	// when configuring the api
 	imgDB := a.Pool.GetImageDB()
+	// Make sure the unique tags are up to date
+	a.Config.UniqueTags = imgDB.UniqueTags
 	images := make([]string, imgDB.GetNumImages())
 
 	for _, item := range imgDB.Images {
@@ -98,9 +100,8 @@ func (a *API) Data() (interface{}, error) {
 	log.Println("Sending files", imagesNotEmpty)
 
 	return types.SlideShowResponse{
-		FileImages: imagesNotEmpty,
-		Speed:      a.Config.Speed,
-		UniqueTags: imgDB.UniqueTags,
+		FileImages:      imagesNotEmpty,
+		SlideShowConfig: a.Config,
 	}, nil
 }
 

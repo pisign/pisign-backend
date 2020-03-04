@@ -1,9 +1,8 @@
 package types
 
 type SlideShowResponse struct {
-	Speed      int
+	SlideShowConfig
 	FileImages []string
-	UniqueTags []string
 }
 
 type SlideShowConfig struct {

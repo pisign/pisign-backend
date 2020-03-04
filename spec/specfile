@@ -1,5 +1,5 @@
 type WeatherResponse {
-    BaseMessage  BaseMessage
+    WeatherConfigWeatherConfig
     Coord        Coord
     Weather      []types.Weather
     Base         string
@@ -53,12 +53,14 @@ type Sys {
 }
 
 type BaseMessage {
+    Position     Position
     Status       MessageStatus
     Error        string
     Data         interface {}
 }
 
 type ClockResponse {
+    ClockConfig  ClockConfig
     Time         int64
 }
 
