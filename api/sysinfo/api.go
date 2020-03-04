@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pisign/pisign-backend/types"
+	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 )
 
@@ -65,13 +66,23 @@ func (a *API) Data() (interface{}, error) {
 	v, err := mem.VirtualMemory()
 
 	if err != nil {
-		return nil, errors.New("Error getting system info")
+		return nil, errors.New("Error getting memory info")
+	}
+
+	d, err := disk.Usage("/")
+
+	if err != nil {
+		return nil, errors.New("Error getting disk info")
 	}
 
 	a.ResponseObject = types.SysInfoResponse{
-		Total:       v.Total,
-		Used:        v.Used,
-		UsedPercent: v.UsedPercent,
+		MemTotal:        v.Total,
+		MemUsed:         v.Used,
+		MemUsedPercent:  v.UsedPercent,
+		DiskUsedPercent: d.UsedPercent,
+		DiskTotal:       d.Total,
+		DiskUsed:        d.Used,
+		DiskFree:        d.Free,
 	}
 
 	a.ValidCache = true
