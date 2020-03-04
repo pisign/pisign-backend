@@ -80,7 +80,6 @@ func (a *API) Data() (interface{}, error) {
 
 	// make twitter api request
 	err := a.DataObject.Update(a.Config)
-
 	if err != nil {
 		a.ValidCache = false
 		return nil, err

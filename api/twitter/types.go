@@ -12,13 +12,16 @@ type TwitterResponse struct {
 
 func (o *TwitterResponse) Update(arguments interface{}) error {
 	a := (arguments).(types.TwitterConfig)
-	apikey := a.APIKey
+	consumer_key := a.ConsumerKey
+	consumer_secret := a.ConsumerSecret
+	access_token := a.AccessToken
+	access_secret := a.AccessSecret
 	tweet_count := a.TweetCount
 	user_handle := a.UserHandle
 
 	// Twitter client
-	config := oauth1.NewConfig("consumerKey", "consumerSecret")
-	token := oauth1.NewToken("accessToken", "accessSecret")
+	config := oauth1.NewConfig(consumer_key, consumer_secret)
+	token := oauth1.NewToken(access_token, access_secret)
 	httpClient := config.Client(oauth1.NoContext, token)
 	client := twitter.NewClient(httpClient)
 
@@ -30,11 +33,15 @@ func (o *TwitterResponse) Update(arguments interface{}) error {
 		return err
 	}
 
+	// store tweets in the twitter response
 	o.Tweets = tweets
 
 	return nil
 }
 
 func (o *TwitterResponse) Transform() interface{} {
-	return nil
+	twitter_response := types.TwitterResponse{
+		Tweets: o.Tweets,
+	}
+	return &twitter_response
 }

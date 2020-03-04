@@ -12,7 +12,10 @@ type TwitterResponse struct {
 
 // TwitterConfig configuration arguments for twitter api
 type TwitterConfig struct {
-	APIKey     string
-	UserHandle string
-	TweetCount int
+	ConsumerKey    string
+	ConsumerSecret string
+	AccessToken    string
+	AccessSecret   string
+	UserHandle     string
+	TweetCount     int
 }
