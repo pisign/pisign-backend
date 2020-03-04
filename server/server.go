@@ -154,7 +154,6 @@ func setupRoutes() *pool.Pool {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		http.StripPrefix("/assets/images/", fileServer).ServeHTTP(w, r)
 	})
-
 	setupStaticFiles("dist", "/")
 	return p
 }
