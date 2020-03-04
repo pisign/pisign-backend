@@ -1,5 +1,5 @@
 type WeatherResponse {
-    BaseMessage  BaseMessage
+    WeatherConfigWeatherConfig
     Coord        Coord
     Weather      []types.Weather
     Base         string
@@ -60,6 +60,7 @@ type BaseMessage {
 }
 
 type ClockResponse {
+    ClockConfig  ClockConfig
     Time         int64
 }
 
