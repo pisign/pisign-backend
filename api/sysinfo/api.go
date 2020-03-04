@@ -1,37 +1,35 @@
-// Package text for displaying a static text message
-package text
+package sysinfo
 
 import (
 	"errors"
-	"fmt"
 	"log"
-
-	"github.com/pisign/pisign-backend/utils"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pisign/pisign-backend/types"
+	"github.com/shirou/gopsutil/mem"
 )
 
 type API struct {
 	types.BaseAPI
-	Config types.TextConfig
-
+	Config         interface{} // TODO do we need a config?
+	ResponseObject types.SysInfoResponse
+	LastCalled     time.Time `json:"-"`
+	ValidCache     bool
 	// Add other fields as necessary, (keep lowercase to avoid being stored in json)
 }
 
 // NewAPI creates a new API
 func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init(types.APIText, sockets, pool, id)
-
-	a.Config.Text = ""
-	a.Config.Title = ""
-
+	a.BaseAPI.Init(types.APISysinfo, sockets, pool, id)
+	a.ValidCache = false
 	return a
 }
 
 // Configure based on client message
 func (a *API) Configure(message types.ClientMessage) error {
+	// TODO this requires no configuration
 	// Make sure the client widget is immediately sent new data with new config options
 	defer func() {
 		if a.Pool != nil && a.Sockets != nil {
@@ -46,17 +44,8 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 	switch message.Action {
 	case types.ConfigureAPI, types.Initialize:
-		log.Printf("Configuring %s: %+v\n", a, message)
-		oldConfig := a.Config
-		if err := utils.ParseJSON(message.Config, &a.Config); err != nil {
-			log.Printf("Could not properly configure %s\n", a)
-			a.Config = oldConfig
-			return errors.New(fmt.Sprintf("could not properly configure %s", a))
-		}
-
-		// Add custom checks for config fields here (see the `time` api as an example)
-
-		log.Printf("%s configuration successful: %+v\n", a, a)
+		log.Printf("Configuring %s: %v\n", a.Name, message)
+		log.Printf("%s configuration successful: %s", a, a)
 	}
 
 	return nil
@@ -64,7 +53,29 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 // Data performs a bulk of the computational logic
 func (a *API) Data() (interface{}, error) {
-	return types.TextResponse{TextConfig: a.Config}, nil
+	// Perform logic here (including call to external API)
+	// 5 second cache
+	if time.Now().Sub(a.LastCalled) < (time.Second*5) && a.ValidCache {
+		// Send the old response object
+		log.Println("using cached value")
+		return a.ResponseObject, nil
+	}
+
+	v, err := mem.VirtualMemory()
+
+	if err != nil {
+		return nil, errors.New("Error getting system info")
+	}
+
+	a.ResponseObject = types.SysInfoResponse{
+		Total:       v.Total,
+		Used:        v.Used,
+		UsedPercent: v.UsedPercent,
+	}
+
+	a.ValidCache = true
+
+	return a.ResponseObject, nil
 }
 
 // Run main entry point to the API
@@ -74,14 +85,16 @@ func (a *API) Run() {
 
 	log.Printf("Running %s\n", a)
 
-	// Send data to client (using default config values)
 	a.Send(a.Data())
 
+	// check every 3 seconds
+	ticker := time.NewTicker(3 * time.Second)
 	defer func() {
+		ticker.Stop()
 		log.Printf("STOPPING %s\n", a)
 	}()
 
-	// Create a new channel to recieve termination messages on
+	// Create a new channel to receive termination messages on
 	stop := a.AddStopChan()
 	for {
 		select {
@@ -89,6 +102,8 @@ func (a *API) Run() {
 			if err := a.Configure(body); err != nil {
 				a.Send(nil, err)
 			}
+		case <-ticker.C: // Update timer tick
+			a.Send(a.Data())
 		case <-stop: // Terminate
 			return
 		}

@@ -2,6 +2,7 @@ package slideshow
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -21,7 +22,7 @@ type API struct {
 // NewAPI creates a new API
 func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
-	a.BaseAPI.Init("slideshow", sockets, pool, id)
+	a.BaseAPI.Init(types.APISlideshow, sockets, pool, id)
 
 	return a
 }
@@ -42,17 +43,17 @@ func (a *API) Configure(message types.ClientMessage) error {
 
 	switch message.Action {
 	case types.ConfigureAPI, types.Initialize:
-		log.Printf("Configuring Slideshow:\n %s\n", string(message.Config))
+		log.Printf("Configuring %s:\n %+v\n", a, string(message.Config))
 		if err := utils.ParseJSON(message.Config, &a.Config); err != nil {
-			log.Println("Could not properly configure Slideshow")
-			return errors.New("could not properly configure Slideshow")
+			log.Printf("Could not properly configure %s\n", a)
+			return errors.New(fmt.Sprintf("could not properly configure %s\n", a))
 		}
 
 		// Add custom checks for config fields here (see the `time` api as an example)
 
-		log.Println("Slideshow configuration successful:", a)
+		log.Printf("%s configuration successful: %+v\n", a, a)
 	}
-	log.Println("Slideshow config set to ", a.Config)
+	log.Printf("%s config set to %+v\n", a, a.Config)
 
 	return nil
 }
@@ -108,7 +109,7 @@ func (a *API) Run() {
 	// Start up the BaseAPI to handle core API stuff
 	go a.BaseAPI.Run()
 
-	log.Println("Running Slideshow")
+	log.Printf("Running %s\n", a)
 
 	// Send data to client (using default config values)
 	a.Send(a.Data())
@@ -116,7 +117,7 @@ func (a *API) Run() {
 
 	defer func() {
 		ticker.Stop()
-		log.Printf("STOPPING Slideshow: %s\n", a.UUID)
+		log.Printf("STOPPING %s\n", a)
 	}()
 
 	// Create a new channel to recieve termination messages on

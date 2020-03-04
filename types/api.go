@@ -10,6 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	APIWeather   string = "weather"
+	APIText             = "text"
+	APIClock            = "clock"
+	APISlideshow        = "slideshow"
+	APITwitter          = "twitter"
+	APISysinfo          = "sysinfo"
+)
+
 // CloseType represents when a socket closes, or a forceful close if Socket is nil
 type CloseType struct {
 	Sockets map[Socket]bool
@@ -177,4 +186,8 @@ func (b *BaseAPI) AddStopChan() chan bool {
 
 func (b *BaseAPI) Running() bool {
 	return b.running
+}
+
+func (b *BaseAPI) String() string {
+	return fmt.Sprintf("%s(%s)", b.Name, b.UUID)
 }

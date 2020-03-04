@@ -26,7 +26,7 @@ type API struct {
 func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
 	// Twitter is the name of the api visible to the client
-	a.BaseAPI.Init("twitter", sockets, pool, id)
+	a.BaseAPI.Init(types.APITwitter, sockets, pool, id)
 	a.Config = types.TwitterConfig{}
 
 	// Configure default values as necessary, for example:
