@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pisign/pisign-backend/types"
 
+	"github.com/pisign/pisign-backend/api/twitter"
 	"github.com/pisign/pisign-backend/api/weather"
 )
 
@@ -40,6 +41,12 @@ func factory(name string, sockets map[types.Socket]bool, pool types.Pool, id uui
 			return text.NewAPI(sockets, pool, id), nil
 		} else {
 			return new(text.API), nil
+		}
+	case types.APITwitter:
+		if create {
+			return twitter.NewAPI(sockets, pool, id), nil
+		} else {
+			return new(twitter.API), nil
 		}
 	case types.APISysinfo:
 		if create {
