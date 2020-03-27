@@ -25,30 +25,41 @@ func AutoCreate(name string) error {
 		NameUpper: strings.ToUpper(name),
 	}
 	log.Printf("Creating new api %s!\n", name)
-	if err := createMainFiles(data); err != nil {
+	allFiles := make([]string, 5)
+	files, err := createMainFiles(data)
+	if err != nil {
 		return err
 	}
-	if err := updateFactory(data); err != nil {
+	allFiles = append(allFiles, files...)
+
+	files, err = createGlobalTypesFile(data)
+	if err != nil {
 		return err
 	}
-	if err := createGlobalTypesFile(data); err != nil {
+	allFiles = append(allFiles, files...)
+
+	files, err = updateFactory(data)
+	if err != nil {
 		return err
 	}
+	allFiles = append(allFiles, files...)
+
+	// TODO: Automatically fix file imports
 	return nil
 }
 
-func createMainFiles(data templateData) error {
+func createMainFiles(data templateData) ([]string, error) {
 	// Create directory
 	basePath := filepath.Join("api", data.NameLower)
 	if err := utils.CreateDirectory(basePath); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Generate Main file
 	path := filepath.Join(basePath, utils.AddExtension(data.NameLower, "go"))
 	outFile, err := utils.CreateFile(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() {
 		utils.WrapError(outFile.Close())
@@ -56,20 +67,40 @@ func createMainFiles(data templateData) error {
 
 	tpl, err := template.ParseFiles("api/example/example.template")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := tpl.Execute(outFile, data); err != nil {
-		return err
+		return nil, err
 	}
-	// TODO: Automatically fix file imports right when file is created
 
-	return nil
+	return []string{path}, nil
 }
 
-func updateFactory(data templateData) error {
-	return errors.New("Unimplemented")
+func updateFactory(data templateData) ([]string, error) {
+	return nil, errors.New("Unimplemented")
 }
 
-func createGlobalTypesFile(data templateData) error {
-	return errors.New("Unimplemented")
+func createGlobalTypesFile(data templateData) ([]string, error) {
+	basePath := filepath.Join("types")
+
+	// Generate Types file
+	path := filepath.Join(basePath, utils.AddExtension(data.NameLower, "go"))
+	log.Printf("Path: %s\n", path)
+	outFile, err := utils.CreateFile(path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		utils.WrapError(outFile.Close())
+	}()
+
+	tpl, err := template.ParseFiles("types/example.template")
+	if err != nil {
+		return nil, err
+	}
+	if err := tpl.Execute(outFile, data); err != nil {
+		return nil, err
+	}
+
+	return []string{path}, nil
 }
