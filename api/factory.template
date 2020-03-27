@@ -1,0 +1,6 @@
+    case types.API{{.NameTitle}}:
+		if create {
+			return {{.NameLower}}.NewAPI(sockets, pool, id), nil
+		} else {
+			return new({{.NameLower}}.API), nil
+		}

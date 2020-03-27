@@ -1,7 +1,7 @@
 package api
 
 import (
-	"errors"
+	"bytes"
 	"log"
 	"path/filepath"
 	"strings"
@@ -38,6 +38,12 @@ func AutoCreate(name string) error {
 	}
 	allFiles = append(allFiles, files...)
 
+	files, err = addTypeToGlobalList(data)
+	if err != nil {
+		return err
+	}
+	allFiles = append(allFiles, files...)
+
 	files, err = updateFactory(data)
 	if err != nil {
 		return err
@@ -57,6 +63,7 @@ func createMainFiles(data templateData) ([]string, error) {
 
 	// Generate Main file
 	path := filepath.Join(basePath, utils.AddExtension(data.NameLower, "go"))
+	log.Printf("Generating %s file...\n", path)
 	outFile, err := utils.CreateFile(path)
 	if err != nil {
 		return nil, err
@@ -77,15 +84,48 @@ func createMainFiles(data templateData) ([]string, error) {
 }
 
 func updateFactory(data templateData) ([]string, error) {
-	return nil, errors.New("Unimplemented")
+	path := filepath.Join("types", "api.go")
+	log.Printf("Updating %s file...\n", path)
+
+	tpl, err := template.ParseFiles("types/api.template")
+	if err != nil {
+		return nil, err
+	}
+	var buffer bytes.Buffer
+	if err := tpl.Execute(&buffer, data); err != nil {
+		return nil, err
+	}
+
+	if err := utils.InsertText(path, buffer.String()); err != nil {
+		return nil, err
+	}
+	return []string{path}, nil
+}
+
+func addTypeToGlobalList(data templateData) ([]string, error) {
+	path := filepath.Join("api", "factory.go")
+	log.Printf("Updating %s file...\n", path)
+
+	tpl, err := template.ParseFiles("api/factory.template")
+	if err != nil {
+		return nil, err
+	}
+	var buffer bytes.Buffer
+	if err := tpl.Execute(&buffer, data); err != nil {
+		return nil, err
+	}
+
+	if err := utils.InsertText(path, buffer.String()); err != nil {
+		return nil, err
+	}
+	return []string{path}, nil
 }
 
 func createGlobalTypesFile(data templateData) ([]string, error) {
-	basePath := filepath.Join("types")
 
 	// Generate Types file
-	path := filepath.Join(basePath, utils.AddExtension(data.NameLower, "go"))
-	log.Printf("Path: %s\n", path)
+	path := filepath.Join("types", utils.AddExtension(data.NameLower, "go"))
+	log.Printf("Generating %s file...\n", path)
 	outFile, err := utils.CreateFile(path)
 	if err != nil {
 		return nil, err

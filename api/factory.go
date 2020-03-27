@@ -4,6 +4,8 @@ package api
 import (
 	"fmt"
 
+	"github.com/pisign/pisign-backend/api/test"
+
 	"github.com/pisign/pisign-backend/api/sysinfo"
 
 	"github.com/pisign/pisign-backend/api/clock"
@@ -60,6 +62,15 @@ func factory(name string, sockets map[types.Socket]bool, pool types.Pool, id uui
 		} else {
 			return new(slideshow.API), nil
 		}
+
+	case types.APITest:
+		if create {
+			return test.NewAPI(sockets, pool, id), nil
+		} else {
+			return new(test.API), nil
+		}
+
+	/*INSERT NEW LINES HERE*/
 	default:
 		return nil, InvalidAPIError{name}
 	}
