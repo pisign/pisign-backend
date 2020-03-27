@@ -1,5 +1,13 @@
 package {{.NameLower}}
 
+import (
+	"errors"
+	"github.com/google/uuid"
+	"github.com/pisign/pisign-backend/types"
+	"github.com/pisign/pisign-backend/utils"
+	"log"
+	"time"
+)
 
 type API struct {
 	types.BaseAPI
@@ -11,7 +19,7 @@ type API struct {
 func NewAPI(sockets map[types.Socket]bool, pool types.Pool, id uuid.UUID) *API {
 	a := new(API)
 	// {{.NameLower}} is the name of the api visible to the client
-	a.BaseAPI.Init("{{.NameLower}}", sockets, pool, id)
+	a.BaseAPI.Init(types.API{{.NameTitle}}, sockets, pool, id)
 
     // Configure default values as necessary, for example:
     // a.Config.Variable = "Value"
@@ -60,7 +68,7 @@ func (a *API) Data() (interface{}, error) {
     // return types.{{.NameTitle}}Response{/* Fields go here */}, nil
 
     // Error:
-    // return nil, errors.New("ERROR GETTING DATA FOR {{.NameLower}}")
+    return nil, errors.New("ERROR GETTING DATA FOR {{.NameLower}}")
 }
 
 // Run main entry point to the API
