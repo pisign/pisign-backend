@@ -1,0 +1,14 @@
+package types
+
+// {{.NameTitle}}Response main format for data coming out of clock api
+type {{.NameTitle}}Response struct {
+	{{.NameTitle}}Config
+
+	// Add other response fields here
+}
+
+// {{.NameTitle}}Config configuration arguments for clock api
+type {{.NameTitle}}Config struct {
+
+	// Add config fields here
+}
