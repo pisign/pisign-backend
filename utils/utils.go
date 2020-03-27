@@ -112,6 +112,17 @@ func CreateDirectory(dirName string) error {
 	if src.Mode().IsRegular() {
 		return fmt.Errorf("CreateDirectory: '%s' already exists as a file, not a directory", dirName)
 	}
-
 	return nil
+}
+
+func CreateFile(path string) (*os.File, error) {
+	emptyFile, err := os.Create(path)
+	if err != nil {
+		return nil, err
+	}
+	return emptyFile, nil
+}
+
+func AddExtension(fname string, ext string) string {
+	return fmt.Sprintf("%s.%s", fname, ext)
 }

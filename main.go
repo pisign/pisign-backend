@@ -23,18 +23,17 @@ func (c *RunCmd) Run(ctx *Context) error {
 }
 
 type CreateCmd struct {
-	Name string `arg,help:"New api name"`
+	Name string `arg help:"New api name"`
 }
 
 func (c *CreateCmd) Run(ctx *Context) error {
 	log.Printf("Create subcommand!\n")
-	api.AutoCreate(c.Name)
-	return nil
+	return api.AutoCreate(c.Name)
 }
 
 var cli struct {
-	Run    RunCmd    `cmd,help:"Run the go server" default:"1"`
-	Create CreateCmd `cmd,help:"Create a new api type"`
+	Run    RunCmd    `cmd help:"Run the go server" default:"1"`
+	Create CreateCmd `cmd help:"Create a new api type"`
 }
 
 func main() {
