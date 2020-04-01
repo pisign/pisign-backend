@@ -14,11 +14,12 @@ type Context struct {
 }
 
 type RunCmd struct {
+	Port int `name:"port" short:"p" help:"Port to run server on" default:"9000"`
 }
 
 func (c *RunCmd) Run(ctx *Context) error {
-	log.Printf("Run subcommand!\n")
-	server.StartLocalServer(9000)
+	log.Printf("Run subcommand with port = %v!\n", c.Port)
+	server.StartLocalServer(c.Port)
 	return nil
 }
 
@@ -32,7 +33,7 @@ func (c *CreateCmd) Run(ctx *Context) error {
 }
 
 var cli struct {
-	Run    RunCmd    `cmd help:"Run the go server" default:"1"`
+	Run    RunCmd    `cmd help:"Run the go server" default="1"`
 	Create CreateCmd `cmd help:"Create a new api type"`
 }
 
