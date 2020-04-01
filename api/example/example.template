@@ -68,7 +68,7 @@ func (a *API) Data() (interface{}, error) {
     // return types.{{.NameTitle}}Response{/* Fields go here */}, nil
 
     // Error:
-    return nil, errors.New("ERROR GETTING DATA FOR {{.NameLower}}")
+    return nil, errors.New("api `{{.NameLower}}` Data function not implemented")
 }
 
 // Run main entry point to the API
