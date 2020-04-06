@@ -17,7 +17,6 @@ const (
 	APISlideshow        = "slideshow"
 	APITwitter          = "twitter"
 	APISysinfo          = "sysinfo"
-	APITest             = "test"
 	/*INSERT NEW LINES HERE*/
 )
 

@@ -19,8 +19,7 @@ type RunCmd struct {
 
 func (c *RunCmd) Run(ctx *Context) error {
 	log.Printf("Run subcommand with port = %v!\n", c.Port)
-	server.StartLocalServer(c.Port)
-	return nil
+	return server.StartLocalServer(c.Port)
 }
 
 type CreateCmd struct {
