@@ -77,3 +77,37 @@ func InsertText(path string, text string) error {
 	fileContent := strings.Join(lines, "\n")
 	return ioutil.WriteFile(path, []byte(fileContent), 0644)
 }
+
+// FileSearch searches for the given string anywhere in the file
+func FileSearch(path string, str string) bool {
+	f, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer func() { WrapError(f.Close()) }()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		log.Printf("Line: %s, search string: %s\n", line, str)
+		if strings.Contains(line, str) {
+			return true
+		}
+	}
+	return false
+}
+
+// AppendText appends text
+func AppendText(path string, text string) error {
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer func() { WrapError(f.Close()) }()
+
+	_, err = f.WriteString(text)
+	if err != nil {
+		return err
+	}
+	return nil
+}

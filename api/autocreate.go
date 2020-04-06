@@ -2,6 +2,8 @@ package api
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
@@ -17,12 +19,33 @@ type templateData struct {
 	NameUpper string
 }
 
+const (
+	APIListFile string = "api/list.txt"
+)
+
+// CheckList Checks the api list file to see if the specified api already exists. Returns true if it does, false otherwise
+func CheckList(name string) bool {
+	return utils.FileSearch(APIListFile, name)
+}
+
+// AddToList
+func AddToList(name string) error {
+	return utils.AppendText(APIListFile, fmt.Sprintf("%s\n", name))
+}
+
 func AutoCreate(name string) error {
 	name = strings.ToLower(name)
 	data := templateData{
 		NameLower: name,
 		NameTitle: strings.Title(name),
 		NameUpper: strings.ToUpper(name),
+	}
+	if CheckList(data.NameLower) {
+		return errors.New(fmt.Sprintf("API %s already exists", data.NameLower))
+	}
+	if err := AddToList(data.NameLower); err != nil {
+		log.Printf("Error adding to list\n")
+		return err
 	}
 	log.Printf("Creating new api %s!\n", name)
 	allFiles := make([]string, 5)
