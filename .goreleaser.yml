@@ -1,0 +1,12 @@
+builds: 
+  - id: "my build"
+    goos:
+      - windows
+      - darwin
+      - linux
+
+    goarch: 
+      - amd64
+      - arm
+      - arm64
+      - 386
