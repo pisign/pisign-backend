@@ -60,6 +60,8 @@ func factory(name string, sockets map[types.Socket]bool, pool types.Pool, id uui
 		} else {
 			return new(slideshow.API), nil
 		}
+
+	/*INSERT NEW LINES HERE*/
 	default:
 		return nil, InvalidAPIError{name}
 	}

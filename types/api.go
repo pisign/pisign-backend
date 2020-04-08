@@ -17,6 +17,7 @@ const (
 	APISlideshow        = "slideshow"
 	APITwitter          = "twitter"
 	APISysinfo          = "sysinfo"
+	/*INSERT NEW LINES HERE*/
 )
 
 // CloseType represents when a socket closes, or a forceful close if Socket is nil
