@@ -1,4 +1,4 @@
-// package main is the main point of entry for the pisign backend server
+// Package main is the main point of entry for the pisign backend server
 package main
 
 import (

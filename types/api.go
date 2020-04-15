@@ -1,4 +1,4 @@
-// package types provides a centralized repository of types used by this package
+// Package types provides a centralized repository of types used by this package
 // 		In addition to internal types used by the server and socket connections, each API
 // 		has it's own go file that defines the values it needs to communicate with a frontend client
 package types

@@ -1,4 +1,4 @@
-// package utils provides utility functions to use elsewhere
+// Package utils provides utility functions to use elsewhere
 package utils
 
 import (

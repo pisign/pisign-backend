@@ -10,7 +10,7 @@ const (
 )
 
 // BaseMessage is the base message we are sending to frontend
-// All structs being send to the frontend should inherit from this
+// All structs being sent to the frontend should inherit from this
 type BaseMessage struct {
 	Position
 	Status MessageStatus
