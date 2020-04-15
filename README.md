@@ -3,6 +3,11 @@
 [![codecov](https://codecov.io/gh/pisign/pisign-backend/branch/master/graph/badge.svg)](https://codecov.io/gh/pisign/pisign-backend)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+### Documentation and API
+
+The documentation for this package is hosted through [pkg.go.dev](pkg.do.dev), and can be found
+**[here](https://pkg.go.dev/github.com/pisign/pisign-backend)**
+
 ### Development
 
 #### Interacting with `main.go`
@@ -15,16 +20,6 @@ added to specify the port of the server
 
 2) `./main run <name>`: This creates a new api with the specified name. It modifies all necessary files
 and creates new skeleton code inside the `api/<name>` folder.
-
-
-#### Post Commits
-
-Copy the script `post-commit` into your git hooks folder, 
-
-`./.git/hooks/`
-
-This makes it so that the specfile in `spec` gets automatically updates whenever we update the 
-external API types defined in the `types/` folder.
 
 
 ### Testing 

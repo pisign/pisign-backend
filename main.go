@@ -1,3 +1,4 @@
+// package main is the main point of entry for the pisign backend server
 package main
 
 import (
@@ -36,6 +37,22 @@ var cli struct {
 	Create CreateCmd `cmd help:"Create a new api type"`
 }
 
+// main is the entry function to the server. It can be run with different sub commands, as follows:
+/*
+Usage: main <command>
+
+Flags:
+  --help    Show context-sensitive help.
+
+Commands:
+  run
+    Run the go server
+
+  create <name>
+    Create a new api type
+
+Run "main <command> --help" for more information on a command.
+*/
 func main() {
 	ctx := kong.Parse(&cli)
 	err := ctx.Run(&Context{})

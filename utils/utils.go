@@ -1,3 +1,4 @@
+// package utils provides utility functions to use elsewhere
 package utils
 
 import (
@@ -14,7 +15,7 @@ import (
  * but right now they are generic
  */
 
-// GetAPIData wraps the get request
+// GetAPIData wraps the get request for a given url string
 func GetAPIData(url string) (*http.Response, error) {
 	resp, err := http.Get(url)
 	// TODO more elegant error handling
@@ -24,7 +25,7 @@ func GetAPIData(url string) (*http.Response, error) {
 	return resp, nil
 }
 
-// ParseResponse wraps ioutil.Readall
+// ParseResponse transforms an entire http.Response object into raw bytes
 func ParseResponse(resp *http.Response) ([]byte, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	// TODO more elegant error handling
@@ -40,13 +41,14 @@ func ParseJSON(body []byte, i interface{}) error {
 	return err
 }
 
-// WrapError wraps an error
+// WrapError wraps an error and prints it to the log
 func WrapError(e error) {
 	if e != nil {
 		log.Println(e.Error())
 	}
 }
 
+// DeleteEmpty deletes empty elements from a string slice, and returns the modified slice
 //https://dabase.com/e/15006/
 func DeleteEmpty(s []string) []string {
 	var r []string
@@ -58,6 +60,7 @@ func DeleteEmpty(s []string) []string {
 	return r
 }
 
+// StringInSlice searches for a given string within a string slice, and returns if it is found or not
 func StringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
