@@ -10,22 +10,17 @@ The main entry point into the program is `main.go` in the root directory. You ca
 `main` using `go build main.go` or run it directly using `go run main.go`. With both methods, there are currently
 two subcommands that can be used:
 
+##### Linux / OSX
 1) `./main run [--port=9000]`: This runs the entire backend server. The `-p` or `--port` flag can be
 added to specify the port of the server
 
 2) `./main run <name>`: This creates a new api with the specified name. It modifies all necessary files
 and creates new skeleton code inside the `api/<name>` folder.
 
+##### Windows
+1) If you installed from the package, run the program via powershell with `.\<PROGRAM_NAME>.exe`
 
-#### Post Commits
-
-Copy the script `post-commit` into your git hooks folder, 
-
-`./.git/hooks/`
-
-This makes it so that the specfile in `spec` gets automatically updates whenever we update the 
-external API types defined in the `types/` folder.
-
+*NOTE* there is a bug where you have to press control + c if the program does not find the `.\assets\` folder. Once you get that error message, if you press control + c one time, the program continues like normal. 
 
 ### Testing 
 
