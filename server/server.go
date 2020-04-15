@@ -159,18 +159,20 @@ func setupRoutes() *pool.Pool {
 }
 
 // StartLocalServer creates a new server on localhost
-func StartLocalServer(port int) {
+func StartLocalServer(port int) error {
 	addr := fmt.Sprintf("0.0.0.0:%v", port)
 	log.Printf("Running server at %v\n", addr)
 	p := setupRoutes()
 	err := http.ListenAndServe(addr, nil)
 	if err != nil {
 		log.Println(err.Error())
+		return err
 	}
 	// Make sure to save the ImageDB before shutdown
 	defer func() {
 		p.SaveImageDB()
 	}()
+	return nil
 }
 
 var upgrader = websocket.Upgrader{

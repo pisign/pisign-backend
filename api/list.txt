@@ -1,0 +1,6 @@
+clock
+slideshow
+sysinfo
+text
+twitter
+weather
