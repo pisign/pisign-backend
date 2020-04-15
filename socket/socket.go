@@ -3,6 +3,7 @@
 package socket
 
 import (
+	"errors"
 	"log"
 	"net"
 
@@ -97,10 +98,16 @@ func (w *Socket) ConfigChan() chan types.ClientMessage {
 
 // Close the underlying websocket connection
 func (w *Socket) Close() error {
+	if w.conn == nil {
+		return errors.New("type Socket has no conn")
+	}
 	return w.conn.Close()
 }
 
 // RemoteAddr retrieve respective remote address from underlying websocket connection
 func (w *Socket) RemoteAddr() net.Addr {
+	if w.conn == nil {
+		return nil
+	}
 	return w.conn.RemoteAddr()
 }
