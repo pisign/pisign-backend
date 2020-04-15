@@ -1,3 +1,4 @@
+// Package pool
 package pool
 
 import (
@@ -22,10 +23,12 @@ type Pool struct {
 	ImageDB        *types.ImageDB
 }
 
+// GetImageDB returns the image database associated with the pool
 func (pool *Pool) GetImageDB() *types.ImageDB {
 	return pool.ImageDB
 }
 
+// SaveImageDB saves the image database out to a file
 func (pool *Pool) SaveImageDB() {
 	pool.ImageDB.NumImages = pool.ImageDB.GetNumImages()
 	file, _ := json.MarshalIndent(pool.ImageDB, "", " ")
@@ -43,7 +46,7 @@ func NewPool() *Pool {
 	}
 }
 
-// List turns map into list
+// List returns an array of all APIs in the pool
 func (pool *Pool) List() []types.API {
 	keys := make([]types.API, len(pool.Map))
 	i := 0
@@ -108,7 +111,7 @@ func (pool *Pool) Register(a types.API) {
 	pool.Save()
 }
 
-// Unregister a new API
+// Unregister an existing API
 func (pool *Pool) Unregister(data types.Unregister) {
 	delete(pool.Map, data.API.GetUUID())
 	if data.Save {
@@ -119,7 +122,7 @@ func (pool *Pool) Unregister(data types.Unregister) {
 	log.Println("Size of Connection Pool: ", len(pool.Map))
 }
 
-// Switch from one API type to another, while maintaining the same socket
+// Switch from one API type to another, while maintaining the same socket connections
 func (pool *Pool) Switch(a types.API, message types.ClientMessage) error {
 	name := message.Name
 	log.Printf("Switching API: %s -> %s\n", a.GetName(), name)

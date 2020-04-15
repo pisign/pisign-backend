@@ -28,11 +28,12 @@ func CheckList(name string) bool {
 	return utils.FileSearch(APIListFile, name)
 }
 
-// AddToList
+// AddToList adds the new api name to the file containing a list of all valid API types
 func AddToList(name string) error {
 	return utils.AppendText(APIListFile, fmt.Sprintf("%s\n", name))
 }
 
+// AutoCreate creates and modifies all necessary files to provide a working skeleton for a new API type
 func AutoCreate(name string) error {
 	name = strings.ToLower(name)
 	data := templateData{

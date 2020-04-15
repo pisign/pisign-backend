@@ -11,19 +11,25 @@ type Position struct {
 	I string `json:"i"`
 }
 
-// ClientAction is fun
+// ClientAction determines which action should be taken when the client sends a message
 type ClientAction string
 
 // Types of actions
+// ConfigureAPI sets API configuration data
+// ConfigurePosition sets API position data
+// Initialize sets both API configuration AND position data
+// Delete deletes that specific API instance
+// ChangeAPI changes the API type to another (e.g. clock --> weather)
 const (
 	ConfigureAPI      ClientAction = "ConfigureAPI"
+	Initialize        ClientAction = "Init"
 	ConfigurePosition ClientAction = "ConfigurePosition"
 	Delete            ClientAction = "Delete"
 	ChangeAPI         ClientAction = "ChangeAPI"
-	Initialize        ClientAction = "Init"
 )
 
-// ClientMessage for configuring
+// ClientMessage is the structure of what a client should be sending (in JSON form)
+//		Only some fields will be used in any given message, depending on the ClientAction specified
 type ClientMessage struct {
 	Action   ClientAction
 	Position Position

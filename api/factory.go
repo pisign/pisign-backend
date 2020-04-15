@@ -72,6 +72,7 @@ func NewAPI(name string, sockets map[types.Socket]bool, pool types.Pool, id uuid
 	return factory(name, sockets, pool, id, true)
 }
 
+// ValidateAPI validates the api name to make sure an API type with that name exists
 func ValidateAPI(name string) error {
 	_, err := factory(name, nil, nil, uuid.New(), false)
 	return err

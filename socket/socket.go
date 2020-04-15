@@ -1,5 +1,5 @@
 // Package socket creates and manages Sockets from the client
-// Each 'Socket' represents a single Socket on the client, and has its own websocket connection
+// Each 'Socket' represents has its own websocket connection to a single client
 package socket
 
 import (
@@ -20,7 +20,7 @@ type Socket struct {
 	configChan chan types.ClientMessage
 }
 
-// Create creates a new Socket, with a valid api attached
+// Create creates a new Socket, wrapped around a primitive websocket.Conn connection
 func Create(configChan chan types.ClientMessage, conn *websocket.Conn) *Socket {
 	socket := &Socket{
 		conn:       conn,
@@ -31,6 +31,9 @@ func Create(configChan chan types.ClientMessage, conn *websocket.Conn) *Socket {
 	return socket
 }
 
+// Read continuously waits for incoming information from the underlying socket, and forwards the data
+// appropriately through the proper channel objects
+// Note: this function should ALWAYS be run asynchronously, since it blocks while waiting for new data
 func (w *Socket) Read() {
 	// The only time the socket is recieving data is when it is getting configutation data
 	defer func() {
@@ -69,7 +72,7 @@ func (w *Socket) SendSuccess(msg interface{}, position types.Position) {
 	})
 }
 
-// SendErrorMessage sends the error message
+// SendErrorMessage sends an error message
 func (w *Socket) SendErrorMessage(err error) {
 	w.Send(types.BaseMessage{
 		Status: types.StatusFailure,
@@ -78,6 +81,7 @@ func (w *Socket) SendErrorMessage(err error) {
 }
 
 // Send out to client through websocket
+// The SendSuccess and SendErrorMessage should be used to construct the messages. Send should rarely be used directly
 func (w *Socket) Send(msg interface{}) {
 	if err := w.conn.WriteJSON(msg); err != nil {
 		log.Printf("Error sending JSON to client: %v\n", err)
@@ -92,7 +96,7 @@ func (w *Socket) ConfigChan() chan types.ClientMessage {
 	return w.configChan
 }
 
-// Closes the underlying websocket connection
+// Close the underlying websocket connection
 func (w *Socket) Close() error {
 	if w.conn == nil {
 		return errors.New("type Socket has no conn")
@@ -100,6 +104,7 @@ func (w *Socket) Close() error {
 	return w.conn.Close()
 }
 
+// RemoteAddr retrieve respective remote address from underlying websocket connection
 func (w *Socket) RemoteAddr() net.Addr {
 	if w.conn == nil {
 		return nil

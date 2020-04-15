@@ -36,6 +36,7 @@ func CreateDirectory(dirName string) error {
 	return nil
 }
 
+// CreateFile creates a new file at the given path, or returns an error if unsuccessful
 func CreateFile(path string) (*os.File, error) {
 	emptyFile, err := os.Create(path)
 	if err != nil {
@@ -44,11 +45,16 @@ func CreateFile(path string) (*os.File, error) {
 	return emptyFile, nil
 }
 
+// AddExtension adds an extension to a filename
 func AddExtension(fname string, ext string) string {
 	return fmt.Sprintf("%s.%s", fname, ext)
 }
 
-// Text insertion inspired by https://siongui.github.io/2017/01/30/go-insert-line-or-string-to-file/
+// InsertText inserts new text into a file pointed to by `path`
+// 	It scans the file for a specific line of text (the value of the INSERT_TEXT constant in this file),
+// 	and inserts the new text right before that line of text. This allows for repeated use with a new string.
+//
+// this function was inspired by https://siongui.github.io/2017/01/30/go-insert-line-or-string-to-file/
 func InsertText(path string, text string) error {
 	f, err := os.Open(path)
 	if err != nil {
@@ -78,7 +84,7 @@ func InsertText(path string, text string) error {
 	return ioutil.WriteFile(path, []byte(fileContent), 0644)
 }
 
-// FileSearch searches for the given string anywhere in the file
+// FileSearch searches for the given string `str` anywhere in the file pointed by to `path`
 func FileSearch(path string, str string) bool {
 	f, err := os.Open(path)
 	if err != nil {
@@ -97,7 +103,7 @@ func FileSearch(path string, str string) bool {
 	return false
 }
 
-// AppendText appends text
+// AppendText appends `text` to the end of a file pointed to by `path`
 func AppendText(path string, text string) error {
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {

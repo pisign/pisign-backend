@@ -1,3 +1,6 @@
+// Package types provides a centralized repository of types used by this package
+// 		In addition to internal types used by the server and socket connections, each API
+// 		has it's own go file that defines the values it needs to communicate with a frontend client
 package types
 
 import (
@@ -20,13 +23,13 @@ const (
 	/*INSERT NEW LINES HERE*/
 )
 
-// CloseType represents when a socket closes, or a forceful close if Socket is nil
+// CloseType represents when sockets close, or a forceful close if Sockets is nil
 type CloseType struct {
 	Sockets map[Socket]bool
 	Save    bool
 }
 
-// BaseAPI base for all APIs
+// BaseAPI base for all APIs. Holds all root information necessary to manage an API
 type BaseAPI struct {
 	Position
 	Name       string
@@ -39,7 +42,7 @@ type BaseAPI struct {
 	running    bool
 }
 
-// Init Initialization
+// Init handles API initialization
 func (b *BaseAPI) Init(name string, sockets map[Socket]bool, pool Pool, id uuid.UUID) {
 	b.Name = name
 	b.Sockets = make(map[Socket]bool)
@@ -92,6 +95,7 @@ func (b *BaseAPI) Configure(message ClientMessage) error {
 	return nil
 }
 
+// Run is the primary function that is run in parallel to other operations in order to catch socket closures
 func (b *BaseAPI) Run() {
 	defer func() {
 		log.Printf("STOPPING BASE API: %s\n", b.UUID)
@@ -118,6 +122,7 @@ func (b *BaseAPI) Run() {
 	}
 }
 
+// Data defaults to return nothing for the BaseAPI, and should be overridden by each API type
 func (b *BaseAPI) Data() (interface{}, error) {
 	return nil, nil
 }
@@ -136,7 +141,7 @@ func (b *BaseAPI) Stop() {
 	}
 }
 
-// Send to websocket
+// Send to the connected clients through the websockets
 func (b *BaseAPI) Send(data interface{}, err error) {
 	// If API has already been closed
 	if !b.Running() {
@@ -179,16 +184,19 @@ func (b *BaseAPI) AddSocket(socket Socket) {
 	}
 }
 
+//AddStopChan allows all sockets to be centrally managed from within the `Run` function
 func (b *BaseAPI) AddStopChan() chan bool {
 	stop := make(chan bool, 1)
 	b.StopChans = append(b.StopChans, stop)
 	return stop
 }
 
+// Running returns whether the API is currently still running
 func (b *BaseAPI) Running() bool {
 	return b.running
 }
 
+// String provides a convenient string represent of an API object
 func (b *BaseAPI) String() string {
 	return fmt.Sprintf("%s(%s)", b.Name, b.UUID)
 }

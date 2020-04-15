@@ -158,7 +158,7 @@ func setupRoutes() *pool.Pool {
 	return p
 }
 
-// StartLocalServer creates a new server on localhost
+// StartLocalServer creates a new server on localhost with the specified port
 func StartLocalServer(port int) error {
 	addr := fmt.Sprintf("0.0.0.0:%v", port)
 	log.Printf("Running server at %v\n", addr)
